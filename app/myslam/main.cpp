@@ -5,12 +5,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include "rplidar.h"
 
-#ifndef _countof
 #define _countof(_Array) (int)(sizeof(_Array) / sizeof(_Array[0]))
-#endif
 
 static inline void delay(_word_size_t ms){
     while (ms>=1000){
@@ -23,14 +22,22 @@ static inline void delay(_word_size_t ms){
 
 using namespace rp::standalone::rplidar;
 
+/**
+ * @brief Ctrl+Cを押されたときのハンドラ
+ */
+bool ctrl_c_pressed;
+void ctrlc(int)
+{
+    ctrl_c_pressed = true;
+}
+
 
 bool checkRPLIDARHealth(RPlidarDriver * drv)
 {
     u_result     op_result;
     rplidar_response_device_health_t healthinfo;
-
-
     op_result = drv->getHealth(healthinfo);
+    
     if (IS_OK(op_result)) { // the macro IS_OK is the preperred way to judge whether the operation is succeed.
         printf("RPLidar health status : %d\n", healthinfo.status);
         if (healthinfo.status == RPLIDAR_STATUS_ERROR) {
@@ -41,20 +48,11 @@ bool checkRPLIDARHealth(RPlidarDriver * drv)
         } else {
             return true;
         }
-
     } else {
         fprintf(stderr, "Error, cannot retrieve the lidar health code: %x\n", op_result);
         return false;
     }
 }
-
-#include <signal.h>
-bool ctrl_c_pressed;
-void ctrlc(int)
-{
-    ctrl_c_pressed = true;
-}
-
 
 /**
  * @brief メイン関数
@@ -69,7 +67,7 @@ int main(int argc, const char * argv[])
            "Version: \"RPLIDAR_SDK_VERSION\"\n");
 
     // create the driver instance
-	RPlidarDriver * drv = RPlidarDriver::CreateDriver(DRIVER_TYPE_SERIALPORT);
+    RPlidarDriver * drv = RPlidarDriver::CreateDriver(DRIVER_TYPE_SERIALPORT);
     if (!drv) {
         fprintf(stderr, "insufficent memory, exit\n");
         exit(-2);
