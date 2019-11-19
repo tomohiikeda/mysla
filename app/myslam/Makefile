@@ -23,8 +23,8 @@ MODULE_NAME := $(notdir $(CURDIR))
 
 include $(HOME_TREE)/mak_def.inc
 
-CXXSRC += main.cpp
-C_INCLUDES += -I$(CURDIR)/../../sdk/include -I$(CURDIR)/../../sdk/src
+CXXSRC += main.cpp Lidar.cpp GnuplotPlotter.cpp Plotter.cpp
+C_INCLUDES += -I$(CURDIR)/../../sdk/include -I$(CURDIR)/../../sdk/src -I$(CURDIR)/include
 
 EXTRA_OBJ := 
 LD_LIBS += -lstdc++ -lpthread
