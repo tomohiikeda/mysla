@@ -8,16 +8,17 @@ using namespace rp::standalone::rplidar;
 
 class Lidar{
     public:
-        Lidar(Plotter& plotter):_plotter(plotter){}
+        Lidar(Plotter *plotter):_plotter(plotter){}
         bool init(const char *devname, const uint32_t baudrate);
         void start(void);
         void stop(void);
 
     protected:
         RPlidarDriver *_drv;
-        Plotter& _plotter;
+        Plotter *_plotter;
 
         bool check_health(void);
+        bool get_devinfo(void);
 
     private:
 };

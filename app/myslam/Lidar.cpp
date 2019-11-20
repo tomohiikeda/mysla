@@ -1,122 +1,172 @@
 #include <stdio.h>
+#include <stddef.h>
 #include "Lidar.hpp"
 #include "rplidar.h"
 
-
+/**
+ * @brief Lidar初期化関数
+ */
 bool Lidar::init(const char *devname, const uint32_t baudrate)
 {
     u_result result = RESULT_OK;
 
-    this->_drv = RPlidarDriver::CreateDriver(DRIVER_TYPE_SERIALPORT);
-    if (!_drv) {
+    _drv = RPlidarDriver::CreateDriver(DRIVER_TYPE_SERIALPORT);
+    if(!_drv) {
         fprintf(stderr, "failed to create driver\n");
         goto error;
     }
 
     result = _drv->connect(devname, baudrate);
-    if (IS_FAIL(result)){
-        fprintf(stderr, "failed to connect result=0x%x, "
-                        "devname=%s, baudrate=%d\n",
-                    result, devname, baudrate);
-        goto error;
-    }
-    
-    rplidar_response_device_info_t devinfo;
-    result = _drv->getDeviceInfo(devinfo);
-    if (IS_FAIL(result)){
-        fprintf(stderr, "failed to getDeviceInfo result=0x%x\n", result);
+    if(IS_FAIL(result)) {
+        fprintf(stderr,
+                "failed to connect result=0x%x, "
+                "devname=%s, baudrate=%d\n",
+                result, devname, baudrate);
         goto error;
     }
 
-    printf("RPLIDAR S/N: ");
-    for (int pos = 0; pos < 16 ;++pos) {
-        printf("%02X", devinfo.serialnum[pos]);
-    }
-
-    printf("\n"
-            "Firmware Ver: %d.%02d\n"
-            "Hardware Rev: %d\n"
-            , devinfo.firmware_version>>8
-            , devinfo.firmware_version & 0xFF
-            , (int)devinfo.hardware_version);
-
-    
-    if (check_health() == false){
+    if(get_devinfo() == false)
         goto error;
-    }
-    
+
+    if(check_health() == false)
+        goto error;
+
     return true;
 
 error:
     if(_drv != NULL)
         RPlidarDriver::DisposeDriver(_drv);
-    
-    _drv = NULL;
 
+    _drv = NULL;
     return false;
 }
 
-
+/**
+ * @brief 計測開始
+ */
 void Lidar::start(void)
 {
-    if(_drv == NULL){
+    if(_drv == NULL) {
         return;
     }
 
     _drv->startMotor();
-    _drv->startScan(0,1);
+    _drv->startScan(0, 1);
 
-/*
-        // fetech result and print it out...
-    while (1) {
-        rplidar_response_measurement_node_t nodes[8192];
-        size_t   count = _countof(nodes);
+    /*
+            // fetech result and print it out...
+        while (1) {
+            rplidar_response_measurement_node_t nodes[8192];
+            size_t   count = _countof(nodes);
 
-        op_result = drv->grabScanData(nodes, count);
+            op_result = drv->grabScanData(nodes, count);
 
-        if (IS_OK(op_result)) {
-            drv->ascendScanData(nodes, count);
-            for (int pos = 0; pos < (int)count ; ++pos) {
-                printf("%s theta: %03.2f Dist: %08.2f Q: %d \n", 
-                    (nodes[pos].sync_quality & RPLIDAR_RESP_MEASUREMENT_SYNCBIT) ?"S ":"  ", 
-                    (nodes[pos].angle_q6_checkbit >> RPLIDAR_RESP_MEASUREMENT_ANGLE_SHIFT)/64.0f,
-                    nodes[pos].distance_q2/4.0f,
-                    nodes[pos].sync_quality >> RPLIDAR_RESP_MEASUREMENT_QUALITY_SHIFT);
+            if (IS_OK(op_result)) {
+                drv->ascendScanData(nodes, count);
+                for (int pos = 0; pos < (int)count ; ++pos) {
+                    printf("%s theta: %03.2f Dist: %08.2f Q: %d \n",
+                        (nodes[pos].sync_quality &
+       RPLIDAR_RESP_MEASUREMENT_SYNCBIT) ?"S ":"  ",
+                        (nodes[pos].angle_q6_checkbit >>
+       RPLIDAR_RESP_MEASUREMENT_ANGLE_SHIFT)/64.0f, nodes[pos].distance_q2/4.0f,
+                        nodes[pos].sync_quality >>
+       RPLIDAR_RESP_MEASUREMENT_QUALITY_SHIFT);
+                }
+            }
+
+            if (ctrl_c_pressed){
+                break;
             }
         }
-
-        if (ctrl_c_pressed){ 
-            break;
-        }
-    }
-*/    
-
+    */
 }
 
+/**
+ * @brief 計測終了
+ */
+void Lidar::stop(void)
+{
+    _drv->stop();
+    _drv->stopMotor();
+}
+
+/**
+ * @brief 健康診断
+ * @return true:健康、false:不健康
+ */
 bool Lidar::check_health(void)
 {
     rplidar_response_device_health_t healthinfo;
-    u_result op_result = _drv->getHealth(healthinfo);
-    
-    if (IS_OK(op_result)) {
+    u_result result = _drv->getHealth(healthinfo);
+
+    if(IS_OK(result)) {
         printf("RPLidar health status : %d\n", healthinfo.status);
-        if (healthinfo.status == RPLIDAR_STATUS_ERROR) {
-            fprintf(stderr, "Error, rplidar internal error detected. Please reboot the device to retry.\n");
-            // enable the following code if you want rplidar to be reboot by software
-            // drv->reset();
+        if(healthinfo.status == RPLIDAR_STATUS_ERROR) {
+            fprintf(stderr, "Error, rplidar internal error detected. Please "
+                            "reboot the device to retry.\n");
+            // enable the following code if you want rplidar to be reboot by
+            // software drv->reset();
             return false;
         } else {
             return true;
         }
     } else {
-        fprintf(stderr, "Error, cannot retrieve the lidar health code: %x\n", op_result);
+        fprintf(stderr, "Error, cannot retrieve the lidar health code: %x\n",
+                result);
         return false;
     }
 }
 
-
-void Lidar::stop(void)
+/**
+ * @brief デバイス情報を取得してコンソールに表示
+ * @return true: 取得成功、false: 取得失敗
+ */
+bool Lidar::get_devinfo(void)
 {
-    _drv->stop();
-    _drv->stopMotor();
+    rplidar_response_device_info_t devinfo;
+    u_result result = _drv->getDeviceInfo(devinfo);
+    if(IS_FAIL(result)) {
+        fprintf(stderr, "failed to getDeviceInfo result=0x%x\n", result);
+        return false;
+    }
+
+    printf("RPLIDAR S/N: ");
+    for(int pos = 0; pos < 16; ++pos) {
+        printf("%02X", devinfo.serialnum[pos]);
+    }
+
+    printf("\n"
+           "Firmware Ver: %d.%02d\n"
+           "Hardware Rev: %d\n",
+           devinfo.firmware_version >> 8, devinfo.firmware_version & 0xFF,
+           (int)devinfo.hardware_version);
+
+    bool supported = false;
+    result = _drv->checkExpressScanSupported(supported);
+    if(IS_FAIL(result)) {
+        fprintf(stderr, "failed to checkExpressScanSupported result=0x%x\n",
+                result);
+        return false;
+    }
+
+    if(supported)
+        printf("Express Scan is Supported\n");
+    else
+        printf("Express Scan is not Supported\n");
+    
+    rplidar_response_sample_rate_t sample_rate;
+    result = _drv->getSampleDuration_uS(sample_rate);
+    if(IS_FAIL(result)) {
+        fprintf(stderr, "failed to getSampleDuration_uS result=0x%x\n",
+                result);
+        return false;
+    }
+
+    printf("\n"
+           "Standard sample duration = %d us\n"
+           "Express  sample duration = %d us\n",
+            sample_rate.std_sample_duration_us,
+            sample_rate.express_sample_duration_us);
+
+    return true;
 }
