@@ -50,6 +50,7 @@ error:
 void Lidar::start(void)
 {
     if(_drv == NULL) {
+        fprintf(stderr, "can not start, driver is not created\n");
         return;
     }
 
