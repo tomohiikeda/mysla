@@ -9,7 +9,6 @@
 #include "GnuplotPlotter.hpp"
 #include "Lidar.hpp"
 
-#define _countof(_Array) (int)(sizeof(_Array) / sizeof(_Array[0]))
 
 /**
  * @brief Ctrl+Cを押されたときのハンドラ

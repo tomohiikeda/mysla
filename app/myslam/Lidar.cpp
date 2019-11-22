@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <stddef.h>
+#include <algorithm>
 #include "Lidar.hpp"
 #include "rplidar.h"
+
+#define _countof(_Array) (int)(sizeof(_Array) / sizeof(_Array[0]))
 
 /**
  * @brief Lidar初期化関数
@@ -53,32 +56,35 @@ void Lidar::start(void)
     _drv->startMotor();
     _drv->startScan(0, 1);
 
-    /*
-            // fetech result and print it out...
-        while (1) {
-            rplidar_response_measurement_node_t nodes[8192];
-            size_t   count = _countof(nodes);
+    // fetech result and print it out...
+    rplidar_response_measurement_node_hq_t nodes[8192];
+    size_t   count = _countof(nodes);
 
-            op_result = drv->grabScanData(nodes, count);
+    u_result op_result = _drv->grabScanDataHq(nodes, count);
+    printf("count=%zu\n", count);
 
-            if (IS_OK(op_result)) {
-                drv->ascendScanData(nodes, count);
-                for (int pos = 0; pos < (int)count ; ++pos) {
-                    printf("%s theta: %03.2f Dist: %08.2f Q: %d \n",
-                        (nodes[pos].sync_quality &
-       RPLIDAR_RESP_MEASUREMENT_SYNCBIT) ?"S ":"  ",
-                        (nodes[pos].angle_q6_checkbit >>
-       RPLIDAR_RESP_MEASUREMENT_ANGLE_SHIFT)/64.0f, nodes[pos].distance_q2/4.0f,
-                        nodes[pos].sync_quality >>
-       RPLIDAR_RESP_MEASUREMENT_QUALITY_SHIFT);
-                }
+    if (IS_OK(op_result)) {
+        _drv->ascendScanData(nodes, count);
+        for (int pos = 0; pos < (int)count ; ++pos) {
+
+            //if(nodes[pos].quality >> RPLIDAR_RESP_MEASUREMENT_QUALITY_SHIFT != 0){
+            //    printf("%s theta: %03.2f Dist: %08.2fmm Q: %d \n",
+            //    (nodes[pos].sync_quality & RPLIDAR_RESP_MEASUREMENT_SYNCBIT) ?"S ":"  ",
+            //    (nodes[pos].angle_q6_checkbit >> RPLIDAR_RESP_MEASUREMENT_ANGLE_SHIFT)/64.0f, 
+            //    nodes[pos].distance_q2/4.0f,
+            //    nodes[pos].sync_quality >> RPLIDAR_RESP_MEASUREMENT_QUALITY_SHIFT);
+            //}
+            
+            if(nodes[pos].quality != 0){
+                printf("%s theta: %03.2f Dist: %08.2fmm Q: %d \n",
+                (nodes[pos].flag & RPLIDAR_RESP_MEASUREMENT_SYNCBIT) ?"S ":"  ",
+                (nodes[pos].angle_z_q14 >> RPLIDAR_RESP_MEASUREMENT_ANGLE_SHIFT) / 64.0f, 
+                nodes[pos].dist_mm_q2 / 4.0f,
+                nodes[pos].quality >> RPLIDAR_RESP_MEASUREMENT_QUALITY_SHIFT);
             }
 
-            if (ctrl_c_pressed){
-                break;
-            }
         }
-    */
+    }
 }
 
 /**
@@ -141,32 +147,18 @@ bool Lidar::get_devinfo(void)
            devinfo.firmware_version >> 8, devinfo.firmware_version & 0xFF,
            (int)devinfo.hardware_version);
 
-    bool supported = false;
-    result = _drv->checkExpressScanSupported(supported);
+    std::vector<RplidarScanMode> supportedModes;
+    result = _drv->getAllSupportedScanModes(supportedModes);
     if(IS_FAIL(result)) {
-        fprintf(stderr, "failed to checkExpressScanSupported result=0x%x\n",
+        fprintf(stderr, "failed to getAllSupportedScanModes result=0x%x\n",
                 result);
         return false;
     }
 
-    if(supported)
-        printf("Express Scan is Supported\n");
-    else
-        printf("Express Scan is not Supported\n");
-    
-    rplidar_response_sample_rate_t sample_rate;
-    result = _drv->getSampleDuration_uS(sample_rate);
-    if(IS_FAIL(result)) {
-        fprintf(stderr, "failed to getSampleDuration_uS result=0x%x\n",
-                result);
-        return false;
+    for(size_t i=0; i<supportedModes.size(); i++){
+        printf("%s,  samplerate=%f\n", 
+                supportedModes.at(i).scan_mode,
+                supportedModes.at(i).us_per_sample);
     }
-
-    printf("\n"
-           "Standard sample duration = %d us\n"
-           "Express  sample duration = %d us\n",
-            sample_rate.std_sample_duration_us,
-            sample_rate.express_sample_duration_us);
-
     return true;
 }
