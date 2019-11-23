@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <stddef.h>
-#include <algorithm>
+#include <pthread.h> 
 #include "Lidar.hpp"
 #include "rplidar.h"
+#include "math.h"
 
 #define _countof(_Array) (int)(sizeof(_Array) / sizeof(_Array[0]))
 
@@ -21,10 +22,9 @@ bool Lidar::init(const char *devname, const uint32_t baudrate)
 
     result = _drv->connect(devname, baudrate);
     if(IS_FAIL(result)) {
-        fprintf(stderr,
-                "failed to connect result=0x%x, "
-                "devname=%s, baudrate=%d\n",
-                result, devname, baudrate);
+        fprintf(stderr, "failed to connect result=0x%x, "
+                        "devname=%s, baudrate=%d\n",
+                        result, devname, baudrate);
         goto error;
     }
 
@@ -37,55 +37,101 @@ bool Lidar::init(const char *devname, const uint32_t baudrate)
     return true;
 
 error:
-    if(_drv != NULL)
+    if(_drv != NULL){
         RPlidarDriver::DisposeDriver(_drv);
-
-    _drv = NULL;
+        _drv = NULL;
+    }
     return false;
 }
 
 /**
  * @brief 計測開始
  */
-void Lidar::start(void)
+bool Lidar::start(void)
 {
+    u_result result = RESULT_OK;
+
     if(_drv == NULL) {
         fprintf(stderr, "can not start, driver is not created\n");
-        return;
+        return false;
     }
 
-    _drv->startMotor();
-    _drv->startScan(0, 1);
+    result = _drv->startMotor();
+    if (IS_FAIL(result)) {
+        printf("failed to startMotor result=%x\n", result);
+        return false;
+    }
 
-    // fetech result and print it out...
+    result = _drv->startScan(0, 1);
+    if (IS_FAIL(result)) {
+        printf("failed to startScan result=%x\n", result);
+        return false;
+    }
+
+    scan_running = true;
+    int err = pthread_create(&_scan_thread, NULL, Lidar::scan_loop, this);
+    if(err){
+        printf("failed to pthread_create errno=%d\n", err);
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * @brief Node情報を標準出力に表示
+ */
+void Lidar::print_nodes(rplidar_response_measurement_node_hq_t *nodes, 
+                       size_t count)
+{
+    for (int i=0; i<(int)count; i++) {
+        printf("%s theta: %f\tDist: %fmm\t Q: %d\n",
+        (nodes[i].flag & RPLIDAR_RESP_MEASUREMENT_SYNCBIT) ?"S ":"  ",
+        nodes[i].angle_z_q14 * 90.f / 16384.f, 
+        nodes[i].dist_mm_q2 / 4.0f,
+        nodes[i].quality >> 2);
+    }
+    printf("----\n");
+}
+
+/**
+ * @brief Node情報をプロッターで表示
+ */
+void Lidar::plot_nodes(rplidar_response_measurement_node_hq_t *nodes, 
+                       size_t count)
+{
+    
+}
+
+/**
+ * @brief 距離情報のスキャンを繰り返すスレッド
+ */
+void *Lidar::scan_loop(void *arg)
+{
+    Lidar *lidar = (Lidar*)arg;
+    RPlidarDriver *drv = lidar->_drv;
+    u_result result = RESULT_OK;
     rplidar_response_measurement_node_hq_t nodes[8192];
-    size_t   count = _countof(nodes);
+    size_t count = _countof(nodes);
 
-    u_result op_result = _drv->grabScanDataHq(nodes, count);
-    printf("count=%zu\n", count);
-
-    if (IS_OK(op_result)) {
-        _drv->ascendScanData(nodes, count);
-        for (int pos = 0; pos < (int)count ; ++pos) {
-
-            //if(nodes[pos].quality >> RPLIDAR_RESP_MEASUREMENT_QUALITY_SHIFT != 0){
-            //    printf("%s theta: %03.2f Dist: %08.2fmm Q: %d \n",
-            //    (nodes[pos].sync_quality & RPLIDAR_RESP_MEASUREMENT_SYNCBIT) ?"S ":"  ",
-            //    (nodes[pos].angle_q6_checkbit >> RPLIDAR_RESP_MEASUREMENT_ANGLE_SHIFT)/64.0f, 
-            //    nodes[pos].distance_q2/4.0f,
-            //    nodes[pos].sync_quality >> RPLIDAR_RESP_MEASUREMENT_QUALITY_SHIFT);
-            //}
-            
-            if(nodes[pos].quality != 0){
-                printf("%s theta: %03.2f Dist: %08.2fmm Q: %d \n",
-                (nodes[pos].flag & RPLIDAR_RESP_MEASUREMENT_SYNCBIT) ?"S ":"  ",
-                (nodes[pos].angle_z_q14 >> RPLIDAR_RESP_MEASUREMENT_ANGLE_SHIFT) / 64.0f, 
-                nodes[pos].dist_mm_q2 / 4.0f,
-                nodes[pos].quality >> RPLIDAR_RESP_MEASUREMENT_QUALITY_SHIFT);
-            }
-
+    while(lidar->scan_running){
+        
+        result = drv->grabScanDataHq(nodes, count);
+        if (IS_FAIL(result)) {
+            printf("failed to grabScanDataHq result=%x\n", result);
+            return NULL;
         }
+
+        result = drv->ascendScanData(nodes, count);
+        if (IS_FAIL(result)) {
+            printf("failed to ascendScanData result=%x\n", result);
+            return NULL;
+        }
+        
+        lidar->print_nodes(nodes, count);
     }
+
+    return NULL;
 }
 
 /**
@@ -93,6 +139,8 @@ void Lidar::start(void)
  */
 void Lidar::stop(void)
 {
+    scan_running = false;
+    pthread_join(_scan_thread, NULL);
     _drv->stop();
     _drv->stopMotor();
 }

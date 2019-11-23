@@ -34,7 +34,10 @@ int main(int argc, const char *argv[])
 
     signal(SIGINT, ctrlc);
 
-    lidar.start();
+    bool isSuccess = lidar.start();
+    if(isSuccess == false){
+        return EXIT_SUCCESS;
+    }
 
     while (ctrl_c_pressed == false) {
         sleep(1);
