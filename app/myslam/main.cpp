@@ -13,6 +13,7 @@
 /**
  * @brief Ctrl+Cを押されたときのハンドラ
  */
+
 bool ctrl_c_pressed;
 static void ctrlc(int)
 {
