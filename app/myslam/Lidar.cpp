@@ -106,17 +106,19 @@ void Lidar::print_nodes(rplidar_response_measurement_node_hq_t *nodes,
 void Lidar::plot_nodes(rplidar_response_measurement_node_hq_t *nodes, 
                        size_t count)
 {
+    const double pi = 3.141592653589793;
     if(_plotter == NULL) return;
 
     PointCloud pc;
     for(int i=0; i<(int)count; i++){
-        const double pi = 3.141592653589793;
         double deg = nodes[i].angle_z_q14 * 90.f / 16384.f;
         double dist = nodes[i].dist_mm_q2 / 4.0f;
         double x = dist * std::sin(deg * pi / 180);
         double y = dist * std::cos(deg * pi / 180);
-        Point p(x, y);
-        pc.add(p);
+        if(dist != 0){
+            Point p(x, y);
+            pc.add(p);
+        }
     }
     _plotter->plot(pc);
 }
