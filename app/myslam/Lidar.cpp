@@ -34,6 +34,10 @@ bool Lidar::init(const char *devname, const uint32_t baudrate)
     if(check_health() == false)
         goto error;
 
+    if(_plotter != NULL){
+        _plotter->open();
+    }
+
     return true;
 
 error:
@@ -100,7 +104,9 @@ void Lidar::print_nodes(rplidar_response_measurement_node_hq_t *nodes,
 void Lidar::plot_nodes(rplidar_response_measurement_node_hq_t *nodes, 
                        size_t count)
 {
-    
+    if(_plotter != NULL){
+        _plotter->plot();
+    }
 }
 
 /**
@@ -115,7 +121,7 @@ void *Lidar::scan_loop(void *arg)
     size_t count = _countof(nodes);
 
     while(lidar->scan_running){
-        
+        //printf("scan_running=%d\n", lidar->scan_running);
         result = drv->grabScanDataHq(nodes, count);
         if (IS_FAIL(result)) {
             printf("failed to grabScanDataHq result=%x\n", result);
@@ -128,7 +134,8 @@ void *Lidar::scan_loop(void *arg)
             return NULL;
         }
         
-        lidar->print_nodes(nodes, count);
+        //lidar->print_nodes(nodes, count);
+        lidar->plot_nodes(nodes, count);
     }
 
     return NULL;
@@ -139,8 +146,15 @@ void *Lidar::scan_loop(void *arg)
  */
 void Lidar::stop(void)
 {
-    scan_running = false;
-    pthread_join(_scan_thread, NULL);
+    if(scan_running){
+        scan_running = false;
+        pthread_join(_scan_thread, NULL);
+    }
+    
+    if(_plotter != NULL){
+        //_plotter->close();
+    }
+
     _drv->stop();
     _drv->stopMotor();
 }
