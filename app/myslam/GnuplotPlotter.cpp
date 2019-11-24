@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <algorithm>
+#include <fstream>
 #include "GnuplotPlotter.hpp"
 
 void GnuplotPlotter::open(void)
@@ -17,13 +18,17 @@ void GnuplotPlotter::close(void)
     return;
 }
 
-static int x = 0;
 void GnuplotPlotter::plot(PointCloud pc)
 {
     if(fd == NULL) return;
     
-    fprintf(fd, "plot sin(%d*x)\n", x);
+    std::ofstream ofs("plot.dat");
+    for(int i=0; i<pc.size(); i++){
+        ofs << pc.at(i).x << " " << pc.at(i).y << std::endl;
+    }
+    ofs.close();
+
+    fprintf(fd, "plot \"plot.dat\"\n");
     fflush(fd);
-    x++;
     return;
 }

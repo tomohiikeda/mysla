@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <pthread.h> 
-#include <math.h>
+#include <cmath>
+#include <cstdlib>
 #include "rplidar.h"
 #include "Lidar.hpp"
 #include "PointCloud.hpp"
@@ -108,14 +109,15 @@ void Lidar::plot_nodes(rplidar_response_measurement_node_hq_t *nodes,
     if(_plotter == NULL) return;
 
     PointCloud pc;
-    Point a(0,0);
-    Point b(1,0);
-    Point c(0,1);
-    Point d(1,1);
-    pc.add(a);
-    pc.add(b);
-    pc.add(c);
-    pc.add(d);
+    for(int i=0; i<(int)count; i++){
+        const double pi = 3.141592653589793;
+        double deg = nodes[i].angle_z_q14 * 90.f / 16384.f;
+        double dist = nodes[i].dist_mm_q2 / 4.0f;
+        double x = dist * std::sin(deg * pi / 180);
+        double y = dist * std::cos(deg * pi / 180);
+        Point p(x, y);
+        pc.add(p);
+    }
     _plotter->plot(pc);
 }
 
