@@ -1,29 +1,29 @@
 #include <stdio.h>
+#include <algorithm>
 #include "GnuplotPlotter.hpp"
 
 void GnuplotPlotter::open(void)
 {
     fd = popen("gnuplot", "w");
-    fprintf(fd, "plot 1,1\n");
-    fflush(fd);
     return;
 }
 
 void GnuplotPlotter::close(void)
 {
-    if(fd != NULL){
-        pclose(fd);
-        fd = NULL;
-    }
+    if(fd == NULL) return;
+
+    pclose(fd);
+    fd = NULL;
     return;
 }
 
-void GnuplotPlotter::plot(void)
+static int x = 0;
+void GnuplotPlotter::plot(PointCloud pc)
 {
-    if(fd != NULL){
-        //fprintf(fd, "plot 1,1\n");
-        printf("plot\n");
-    }
+    if(fd == NULL) return;
+    
+    fprintf(fd, "plot sin(%d*x)\n", x);
+    fflush(fd);
+    x++;
     return;
 }
-

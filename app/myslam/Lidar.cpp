@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <pthread.h> 
-#include "Lidar.hpp"
+#include <math.h>
 #include "rplidar.h"
-#include "math.h"
+#include "Lidar.hpp"
+#include "PointCloud.hpp"
 
 #define _countof(_Array) (int)(sizeof(_Array) / sizeof(_Array[0]))
 
@@ -104,9 +105,18 @@ void Lidar::print_nodes(rplidar_response_measurement_node_hq_t *nodes,
 void Lidar::plot_nodes(rplidar_response_measurement_node_hq_t *nodes, 
                        size_t count)
 {
-    if(_plotter != NULL){
-        _plotter->plot();
-    }
+    if(_plotter == NULL) return;
+
+    PointCloud pc;
+    Point a(0,0);
+    Point b(1,0);
+    Point c(0,1);
+    Point d(1,1);
+    pc.add(a);
+    pc.add(b);
+    pc.add(c);
+    pc.add(d);
+    _plotter->plot(pc);
 }
 
 /**
@@ -152,7 +162,7 @@ void Lidar::stop(void)
     }
     
     if(_plotter != NULL){
-        //_plotter->close();
+        _plotter->close();
     }
 
     _drv->stop();
