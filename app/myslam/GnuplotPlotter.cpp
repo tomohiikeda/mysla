@@ -6,6 +6,9 @@
 void GnuplotPlotter::open(void)
 {
     fd = popen("gnuplot", "w");
+    fprintf(fd, "set xr[-3000:3000]\n");
+    fprintf(fd, "set yr[-3000:3000]\n");
+    fflush(fd);
     return;
 }
 
@@ -29,7 +32,7 @@ void GnuplotPlotter::plot(PointCloud pc)
     }
     ofs.close();
 
-    fprintf(fd, "plot \"%s\"\n", plotfile);
+    fprintf(fd, "plot \"%s\" with points pointtype 7 pointsize 0.2\n", plotfile);
     fflush(fd);
     return;
 }
