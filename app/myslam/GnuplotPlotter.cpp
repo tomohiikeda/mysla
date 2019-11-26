@@ -8,6 +8,7 @@ void GnuplotPlotter::open(void)
     fd = popen("gnuplot", "w");
     fprintf(fd, "set xr[-3000:3000]\n");
     fprintf(fd, "set yr[-3000:3000]\n");
+    fprintf(fd, "set size square\n");
     fflush(fd);
     return;
 }

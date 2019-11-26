@@ -3,6 +3,7 @@
 #include <pthread.h> 
 #include <cmath>
 #include <cstdlib>
+#include <string.h>
 #include "rplidar.h"
 #include "Lidar.hpp"
 #include "PointCloud.hpp"
@@ -131,25 +132,29 @@ void *Lidar::scan_loop(void *arg)
     Lidar *lidar = (Lidar*)arg;
     RPlidarDriver *drv = lidar->_drv;
     u_result result = RESULT_OK;
-    rplidar_response_measurement_node_hq_t nodes[8192];
-    size_t count = _countof(nodes);
+    const size_t node_max = 8192;
+    rplidar_response_measurement_node_hq_t pre_nodes[node_max];
+    rplidar_response_measurement_node_hq_t cur_nodes[node_max];
+    size_t count = _countof(cur_nodes);
 
     while(lidar->scan_running){
-        //printf("scan_running=%d\n", lidar->scan_running);
-        result = drv->grabScanDataHq(nodes, count);
+        
+        result = drv->grabScanDataHq(cur_nodes, count);
         if (IS_FAIL(result)) {
             printf("failed to grabScanDataHq result=%x\n", result);
             return NULL;
         }
 
-        result = drv->ascendScanData(nodes, count);
+        result = drv->ascendScanData(cur_nodes, count);
         if (IS_FAIL(result)) {
             printf("failed to ascendScanData result=%x\n", result);
             return NULL;
         }
         
         //lidar->print_nodes(nodes, count);
-        lidar->plot_nodes(nodes, count);
+        lidar->plot_nodes(cur_nodes, count);
+
+        memcpy(pre_nodes, cur_nodes, sizeof(cur_nodes));
     }
 
     return NULL;
