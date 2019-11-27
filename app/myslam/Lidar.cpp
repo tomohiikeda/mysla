@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stddef.h>
-#include <pthread.h> 
 #include <cmath>
 #include <cstdlib>
 #include <string.h>
@@ -13,7 +12,7 @@
 /**
  * @brief Lidar初期化関数
  */
-bool Lidar::init(const char *devname, const uint32_t baudrate)
+bool Lidar::init(void)
 {
     u_result result = RESULT_OK;
 
@@ -23,11 +22,9 @@ bool Lidar::init(const char *devname, const uint32_t baudrate)
         goto error;
     }
 
-    result = _drv->connect(devname, baudrate);
+    result = _drv->connect("/dev/ttyUSB0", 115200);
     if(IS_FAIL(result)) {
-        fprintf(stderr, "failed to connect result=0x%x, "
-                        "devname=%s, baudrate=%d\n",
-                        result, devname, baudrate);
+        fprintf(stderr, "failed to connect result=0x%x\n", result);
         goto error;
     }
 
@@ -36,10 +33,6 @@ bool Lidar::init(const char *devname, const uint32_t baudrate)
 
     if(check_health() == false)
         goto error;
-
-    if(_plotter != NULL){
-        _plotter->open();
-    }
 
     return true;
 
@@ -50,6 +43,7 @@ error:
     }
     return false;
 }
+
 
 /**
  * @brief 計測開始
@@ -75,42 +69,40 @@ bool Lidar::start(void)
         return false;
     }
 
-    scan_running = true;
-    int err = pthread_create(&_scan_thread, NULL, Lidar::scan_loop, this);
-    if(err){
-        printf("failed to pthread_create errno=%d\n", err);
-        return false;
-    }
-
     return true;
 }
 
+
 /**
- * @brief Node情報を標準出力に表示
+ * @brief 計測終了
  */
-void Lidar::print_nodes(rplidar_response_measurement_node_hq_t *nodes, 
-                       size_t count)
+void Lidar::stop(void)
 {
-    for (int i=0; i<(int)count; i++) {
-        printf("%s theta: %f\tDist: %fmm\t Q: %d\n",
-        (nodes[i].flag & RPLIDAR_RESP_MEASUREMENT_SYNCBIT) ?"S ":"  ",
-        nodes[i].angle_z_q14 * 90.f / 16384.f, 
-        nodes[i].dist_mm_q2 / 4.0f,
-        nodes[i].quality >> 2);
-    }
-    printf("----\n");
+    _drv->stop();
+    _drv->stopMotor();
 }
 
 /**
- * @brief Node情報をプロッターで表示
+ * @brief 計測終了
  */
-void Lidar::plot_nodes(rplidar_response_measurement_node_hq_t *nodes, 
-                       size_t count)
+bool Lidar::get_point_cloud(PointCloud& point_cloud)
 {
-    const double pi = 3.141592653589793;
-    if(_plotter == NULL) return;
+    rplidar_response_measurement_node_hq_t nodes[8192];
+    size_t count = _countof(nodes);
+    
+    u_result result = _drv->grabScanDataHq(nodes, count);
+    if (IS_FAIL(result)) {
+        printf("failed to grabScanDataHq result=%x\n", result);
+        return false;
+    }
 
-    PointCloud pc;
+    result = _drv->ascendScanData(nodes, count);
+    if (IS_FAIL(result)) {
+        printf("failed to ascendScanData result=%x\n", result);
+        return false;
+    }
+
+    const double pi = 3.141592653589793;
     for(int i=0; i<(int)count; i++){
         double deg = nodes[i].angle_z_q14 * 90.f / 16384.f;
         double dist = nodes[i].dist_mm_q2 / 4.0f;
@@ -118,64 +110,11 @@ void Lidar::plot_nodes(rplidar_response_measurement_node_hq_t *nodes,
         double y = dist * std::cos(deg * pi / 180);
         if(dist != 0){
             Point p(x, y);
-            pc.add(p);
+            point_cloud.add(p);
         }
     }
-    _plotter->plot(pc);
-}
 
-/**
- * @brief 距離情報のスキャンを繰り返すスレッド
- */
-void *Lidar::scan_loop(void *arg)
-{
-    Lidar *lidar = (Lidar*)arg;
-    RPlidarDriver *drv = lidar->_drv;
-    u_result result = RESULT_OK;
-    const size_t node_max = 8192;
-    rplidar_response_measurement_node_hq_t pre_nodes[node_max];
-    rplidar_response_measurement_node_hq_t cur_nodes[node_max];
-    size_t count = _countof(cur_nodes);
-
-    while(lidar->scan_running){
-        
-        result = drv->grabScanDataHq(cur_nodes, count);
-        if (IS_FAIL(result)) {
-            printf("failed to grabScanDataHq result=%x\n", result);
-            return NULL;
-        }
-
-        result = drv->ascendScanData(cur_nodes, count);
-        if (IS_FAIL(result)) {
-            printf("failed to ascendScanData result=%x\n", result);
-            return NULL;
-        }
-        
-        //lidar->print_nodes(nodes, count);
-        lidar->plot_nodes(cur_nodes, count);
-
-        memcpy(pre_nodes, cur_nodes, sizeof(cur_nodes));
-    }
-
-    return NULL;
-}
-
-/**
- * @brief 計測終了
- */
-void Lidar::stop(void)
-{
-    if(scan_running){
-        scan_running = false;
-        pthread_join(_scan_thread, NULL);
-    }
-    
-    if(_plotter != NULL){
-        _plotter->close();
-    }
-
-    _drv->stop();
-    _drv->stopMotor();
+    return true;
 }
 
 /**

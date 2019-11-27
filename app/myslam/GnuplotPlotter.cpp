@@ -3,14 +3,17 @@
 #include <fstream>
 #include "GnuplotPlotter.hpp"
 
-void GnuplotPlotter::open(void)
+bool GnuplotPlotter::open(void)
 {
     fd = popen("gnuplot", "w");
+    if (fd == NULL)
+        return false;
+    
     fprintf(fd, "set xr[-3000:3000]\n");
     fprintf(fd, "set yr[-3000:3000]\n");
     fprintf(fd, "set size square\n");
     fflush(fd);
-    return;
+    return true;
 }
 
 void GnuplotPlotter::close(void)
@@ -28,7 +31,7 @@ void GnuplotPlotter::plot(PointCloud pc)
     
     const char *plotfile = "/tmp/plot.dat";
     std::ofstream ofs(plotfile);
-    for(int i=0; i<pc.size(); i++){
+    for(int i=0; i<(int)pc.size(); i++){
         ofs << pc.at(i).x << " " << pc.at(i).y << std::endl;
     }
     ofs.close();

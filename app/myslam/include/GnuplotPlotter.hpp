@@ -6,7 +6,7 @@
 
 class GnuplotPlotter: public Plotter{
     public:
-        void open(void);
+        bool open(void);
         void close(void);
         void plot(PointCloud pc);
 

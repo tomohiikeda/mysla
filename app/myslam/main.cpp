@@ -8,34 +8,33 @@
 #include <unistd.h>
 #include "GnuplotPlotter.hpp"
 #include "Lidar.hpp"
-
+#include "Odometer.hpp"
+#include "Slam.hpp"
 
 /**
  * @brief Ctrl+Cを押されたときのハンドラ
  */
 
 bool ctrl_c_pressed;
-static void ctrlc(int)
-{
-    ctrl_c_pressed = true;
-}
+static void ctrlc(int){ ctrl_c_pressed = true; }
 
 /**
  * @brief メイン関数
  */
 int main(int argc, const char *argv[])
 {
+    Lidar lidar;
+    Odometer odometer;
     GnuplotPlotter plotter;
-    Lidar lidar(&plotter);
+    Slam slam(&lidar, &odometer, &plotter);
 
-    if (lidar.init("/dev/ttyUSB0", 115200) == false) {
+    if (slam.init() == false) {
         return EXIT_FAILURE;
     }
 
     signal(SIGINT, ctrlc);
 
-    bool isSuccess = lidar.start();
-    if(isSuccess == false){
+    if (slam.start() == false) {
         return EXIT_SUCCESS;
     }
 
@@ -43,7 +42,7 @@ int main(int argc, const char *argv[])
         sleep(1);
     }
 
-    lidar.stop();
+    slam.stop();
 
     return EXIT_SUCCESS;
 }
