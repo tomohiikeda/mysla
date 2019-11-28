@@ -3,23 +3,25 @@
 
 bool Slam::init(void)
 {
-    bool ret = this->sensor->init();
-    return ret;
+    if(sensor->init() == false)
+        return false;
+
+    if(odometer->init() == false)
+        return false;
+
+    return true;
 }
 
 bool Slam::start(void)
 {
-    if(sensor->start() == false){
+    if(sensor->start() == false)
         return false;
-    }
 
-    //if(odometer->start() == false){
-    //    return false;
-    //}
-
-    if(plotter->open() == false){
+    if(odometer->start() == false)
         return false;
-    }
+
+    if(plotter->open() == false)
+        return false;
 
     int err = pthread_create(&slam_thread, NULL, Slam::process_loop, this);
     if(err){

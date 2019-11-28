@@ -1,15 +1,15 @@
 #pragma once
 
 #include <pthread.h> 
-#include "Sensor.hpp"
-#include "Odometer.hpp"
-#include "Plotter.hpp"
+#include "ISensor.hpp"
+#include "IOdometer.hpp"
+#include "IPlotter.hpp"
 #include "DirectinalPosition.hpp"
 #include "PointCloud.hpp"
 
 class Slam{
     public:
-        Slam(Sensor *sensor, Odometer *odometer, Plotter *plotter){
+        Slam(ISensor *sensor, IOdometer *odometer, IPlotter *plotter){
             this->sensor = sensor;
             this->odometer = odometer;
             this->plotter = plotter;
@@ -19,9 +19,9 @@ class Slam{
         void stop(void);
 
     protected:
-        Sensor *sensor;
-        Odometer *odometer;
-        Plotter *plotter;
+        ISensor *sensor;
+        IOdometer *odometer;
+        IPlotter *plotter;
         bool running;
         pthread_t slam_thread;
         DirectionalPosition current_position;

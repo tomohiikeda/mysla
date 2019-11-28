@@ -1,10 +1,10 @@
 #pragma once
 
 #include <stdint.h>
-#include "Plotter.hpp"
+#include "IPlotter.hpp"
 #include "PointCloud.hpp"
 
-class GnuplotPlotter: public Plotter{
+class GnuplotPlotter: public IPlotter{
     public:
         bool open(void);
         void close(void);

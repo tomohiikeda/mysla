@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include "PointCloud.hpp"
 
-class Plotter{
+class IPlotter{
     public:
         virtual bool open(void) = 0;
         virtual void close(void) = 0;

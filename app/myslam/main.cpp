@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include "GnuplotPlotter.hpp"
 #include "Lidar.hpp"
-#include "Odometer.hpp"
+#include "PulseSensor.hpp"
 #include "Slam.hpp"
 
 /**
@@ -24,9 +24,9 @@ static void ctrlc(int){ ctrl_c_pressed = true; }
 int main(int argc, const char *argv[])
 {
     Lidar lidar;
-    Odometer odometer;
+    PulseSensor pulse_sensor;
     GnuplotPlotter plotter;
-    Slam slam(&lidar, &odometer, &plotter);
+    Slam slam(&lidar, &pulse_sensor, &plotter);
 
     if (slam.init() == false) {
         return EXIT_FAILURE;

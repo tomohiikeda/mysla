@@ -1,13 +1,13 @@
 #pragma once
 
 #include <stdint.h>
-#include "Sensor.hpp"
+#include "ISensor.hpp"
 #include "Lidar.hpp"
 #include "rplidar.h"
 
 using namespace rp::standalone::rplidar;
 
-class Lidar : public Sensor{
+class Lidar : public ISensor{
     public:
         bool init(void);
         bool start(void);
