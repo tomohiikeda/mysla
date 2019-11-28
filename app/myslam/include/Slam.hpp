@@ -13,10 +13,12 @@ class Slam{
             this->sensor = sensor;
             this->odometer = odometer;
             this->plotter = plotter;
+            running = false;
         }
         bool init(void);
         bool start(void);
         void stop(void);
+        void process_loop(void);
 
     protected:
         ISensor *sensor;
@@ -24,10 +26,13 @@ class Slam{
         IPlotter *plotter;
         bool running;
         pthread_t slam_thread;
-        DirectionalPosition current_position;
+        DirectionalPosition cur_pos;
         PointCloud world_map;
 
-        static void *process_loop(void *arg);
+        void update_world_map(PointCloud& cur_pc);
+        void estimate_cur_pos(PointCloud& cur_pc);
+
+        static void *thread_entry(void *arg);
 
     private:
 };
