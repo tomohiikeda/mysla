@@ -8,7 +8,7 @@ class GnuplotPlotter: public IPlotter{
     public:
         bool open(void);
         void close(void);
-        void plot(PointCloud pc);
+        void plot(const PointCloud& pc);
 
     protected:
         FILE *fd;

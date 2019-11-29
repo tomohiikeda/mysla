@@ -62,19 +62,19 @@ void Slam::process_loop(void)
     PointCloud pre_pc;
 
     while(running){
-        
+
         PointCloud cur_pc;
 
         if (sensor->get_point_cloud(cur_pc) == false) {
             running = false;
             return;
         }
-        
+
         update_world_map(cur_pc);
         estimate_cur_pos(cur_pc);
 
         cur_pc.copy_to(pre_pc);
-        
+
     }
     return;
 }
@@ -83,8 +83,10 @@ void Slam::process_loop(void)
 /**
  * @brief 現在位置と測定点群からワールドマップを更新する
  */
-void Slam::update_world_map(PointCloud& cur_pc)
+void Slam::update_world_map(const PointCloud& cur_pc)
 {
+    //std::vector<uint32_t> corresp_point;
+    //find_corresponding_point(cur_pc);
     cur_pc.copy_to(world_map);
     plotter->plot(world_map);
 }
@@ -93,7 +95,7 @@ void Slam::update_world_map(PointCloud& cur_pc)
 /**
  * @brief ワールドマップと測定点群から現在位置を推定する
  */
-void Slam::estimate_cur_pos(PointCloud& cur_pc)
+void Slam::estimate_cur_pos(const PointCloud& cur_pc)
 {
     cur_pos.print();
 }

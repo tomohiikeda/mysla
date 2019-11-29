@@ -29,8 +29,8 @@ class Slam{
         DirectionalPosition cur_pos;
         PointCloud world_map;
 
-        void update_world_map(PointCloud& cur_pc);
-        void estimate_cur_pos(PointCloud& cur_pc);
+        void update_world_map(const PointCloud& cur_pc);
+        void estimate_cur_pos(const PointCloud& cur_pc);
 
         static void *thread_entry(void *arg);
 

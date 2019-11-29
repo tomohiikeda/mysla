@@ -25,13 +25,13 @@ void GnuplotPlotter::close(void)
     return;
 }
 
-void GnuplotPlotter::plot(PointCloud pc)
+void GnuplotPlotter::plot(const PointCloud& pc)
 {
     if(fd == NULL) return;
     
     const char *plotfile = "/tmp/plot.dat";
     std::ofstream ofs(plotfile);
-    for(int i=0; i<(int)pc.size(); i++){
+    for(size_t i=0; i<pc.size(); i++){
         ofs << pc.at(i).x << " " << pc.at(i).y << std::endl;
     }
     ofs.close();
