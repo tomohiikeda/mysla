@@ -1,6 +1,7 @@
 #pragma once
 
 #include <pthread.h> 
+#include <cmath>
 #include "ISensor.hpp"
 #include "IOdometer.hpp"
 #include "IPlotter.hpp"
@@ -20,7 +21,7 @@ class Slam{
         void stop(void);
         void process_loop(void);
 
-    protected:
+    private:
         ISensor *sensor;
         IOdometer *odometer;
         IPlotter *plotter;
@@ -31,8 +32,12 @@ class Slam{
 
         void update_world_map(const PointCloud& cur_pc);
         void estimate_cur_pos(const PointCloud& cur_pc);
+        double calculate_cost(const PointCloud& cur_pc) const;
+        void wait_for_key(void) const;
+        inline double to_radian(double degree) const {
+            return degree * M_PI / 180;
+        }
 
         static void *thread_entry(void *arg);
 
-    private:
 };

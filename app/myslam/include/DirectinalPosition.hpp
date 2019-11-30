@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 
 class DirectionalPosition{
     public:
@@ -6,7 +7,9 @@ class DirectionalPosition{
         double x;
         double y;
 
-        void print(void) { printf("(%f, %f, %f)\n", x, y, direction); }
+        void print(void) {
+            std::cout << x << ", " << y << ", " << direction << std::endl;
+        }
         void move_to(DirectionalPosition move){
             direction += move.direction;
             x += move.x;

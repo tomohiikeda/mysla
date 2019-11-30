@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <vector>
+#include <cmath>
 #include "Point.hpp"
 
 class PointCloud{
@@ -15,7 +16,20 @@ class PointCloud{
             for (size_t i=0; i<points.size(); i++)
                 to.add(points.at(i));
         }
-
+        void move(double x, double y){
+            for (size_t i=0; i<points.size(); i++) {
+                points.at(i).x += x;
+                points.at(i).y += x;
+            }
+        }
+        void rotate(double radian){
+            for (size_t i=0; i<points.size(); i++) {
+                double x = points.at(i).x;
+                double y = points.at(i).y;
+                points.at(i).x  = x * std::cos(radian) - y * std::sin(radian);
+                points.at(i).y  = x * std::sin(radian) + y * std::cos(radian);
+            }
+        }
     protected:
         std::vector<Point> points;
 

@@ -9,8 +9,8 @@ bool GnuplotPlotter::open(void)
     if (fd == NULL)
         return false;
     
-    fprintf(fd, "set xr[-3000:3000]\n");
-    fprintf(fd, "set yr[-3000:3000]\n");
+    fprintf(fd, "set xr[-3500:3500]\n");
+    fprintf(fd, "set yr[-3500:3500]\n");
     fprintf(fd, "set size square\n");
     fflush(fd);
     return true;
