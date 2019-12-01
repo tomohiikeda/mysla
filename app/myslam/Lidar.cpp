@@ -102,6 +102,7 @@ bool Lidar::get_point_cloud(PointCloud& point_cloud)
         return false;
     }
 
+    point_cloud.clear();
     const double pi = 3.141592653589793;
     for(int i=0; i<(int)count; i++){
         double deg = nodes[i].angle_z_q14 * 90.f / 16384.f;
