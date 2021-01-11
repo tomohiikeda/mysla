@@ -12,7 +12,7 @@ class Lidar : public ISensor{
         bool init(void);
         bool start(void);
         void stop(void);
-        bool get_point_cloud(PointCloud& point_cloud);
+        bool get_point_cloud(PointCloud *point_cloud);
 
     protected:
         RPlidarDriver *_drv;

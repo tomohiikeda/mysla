@@ -4,35 +4,46 @@
 #include <vector>
 #include <cmath>
 #include "Point.hpp"
+#include <fstream>
+#include <iostream>
+#include <sstream>
 
 class PointCloud{
     public:
         void add(Point point){points.push_back(point); }
-        
-        void add(const PointCloud& pc){
-            for (uint32_t i=0; i<pc.size(); i++){
-                points.push_back(pc.at(i));
+
+        void add(const PointCloud *pc){
+            for (uint32_t i=0; i<pc->size(); i++){
+                points.push_back(pc->at(i));
             }
         }
-        
-        const Point& at(int x) const { return points.at(x); }
-        size_t size(void) const { return points.size(); }
-        void clear(void) { points.clear(); }
-        
+
+        const Point& at(int x) const {
+            return points.at(x);
+        }
+
+        size_t size(void) const {
+            return points.size();
+        }
+
+        void clear(void) {
+            points.clear();
+        }
+
         void copy_to(PointCloud& to) const {
             to.clear();
             for (size_t i=0; i<points.size(); i++)
                 to.add(points.at(i));
         }
-        
+
         void move(double x, double y){
             for (size_t i=0; i<points.size(); i++) {
                 points.at(i).x += x;
                 points.at(i).y += x;
             }
         }
-        
-        void rotate(double radian){
+
+        void rotate(double radian) {
             for (size_t i=0; i<points.size(); i++) {
                 double x = points.at(i).x;
                 double y = points.at(i).y;
@@ -41,7 +52,32 @@ class PointCloud{
             }
         }
 
-        void optimize(void){
+        void save_to_file(const char *filename) const
+        {
+            std::ofstream ofs(filename);
+            for (size_t i=0; i<points.size(); i++){
+                ofs << points.at(i).x << " " << points.at(i).y << std::endl;
+            }
+            ofs.close();
+        }
+
+        void load_from_file(const char *filename)
+        {
+            std::ifstream ifs(filename);
+            if (!ifs)
+                return;
+
+            std::string line;
+            while (getline(ifs, line)) {
+                std::stringstream ss;
+                std::string s, x, y;
+                ss << line;
+                getline(ss, x, ' ');
+                getline(ss, y, ' ');
+                Point p(stod(x), stod(y));
+                this->add(p);
+            }
+            ifs.close();
         }
 
     protected:

@@ -30,12 +30,12 @@ class Slam{
         Pose2D cur_pose;
         PointCloud world_map;
 
-        void update_world_map(const PointCloud& cur_pc);
-        void estimate_cur_pose(const PointCloud& cur_pc);
-        double calculate_cost(const PointCloud& cur_pc) const;
+        void update_world_map(const PointCloud *cur_pc);
+        void estimate_cur_pose(const PointCloud *cur_pc);
+        double calculate_cost(const PointCloud *cur_pc) const;
         void wait_for_key(void) const;
-        Pose2D calc_deviation_from_world(const PointCloud& pc) const;
-        void grow_world_map(const PointCloud& cur_pc);
+        Pose2D calc_deviation_from_world(const PointCloud *pc) const;
+        void grow_world_map(const PointCloud *cur_pc);
         
         
         inline double to_radian(double degree) const {

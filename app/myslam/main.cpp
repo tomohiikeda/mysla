@@ -10,14 +10,20 @@
 #include "Lidar.hpp"
 #include "PulseSensor.hpp"
 #include "Slam.hpp"
+#include "ScanMatcher.hpp"
+
 
 /**
  * @brief Ctrl+Cを押されたときのハンドラ
  */
 
 bool ctrl_c_pressed;
-static void ctrlc(int){ ctrl_c_pressed = true; }
+static void ctrlc(int)
+{
+    ctrl_c_pressed = true;
+}
 
+#if 0
 /**
  * @brief メイン関数
  */
@@ -45,4 +51,30 @@ int main(int argc, const char *argv[])
     slam.stop();
 
     return EXIT_SUCCESS;
+}
+#endif
+
+int main(int argc, const char *argv[])
+{
+    GnuplotPlotter *plotter = new GnuplotPlotter();
+    PointCloud cur_scan;
+    PointCloud ref_scan;
+    ScanMatcher *scan_matcher = new ScanMatcher();
+    plotter->open();
+
+    ref_scan.load_from_file("pt_1.txt");
+    cur_scan.load_from_file("pt_2.txt");
+    scan_matcher->set_debug_plotter(plotter);
+    scan_matcher->set_reference_scan(&ref_scan);
+    scan_matcher->set_current_scan(&cur_scan);
+
+    scan_matcher->do_scan_matching();
+
+    while (ctrl_c_pressed == false) {
+        sleep(1);
+    }
+
+    plotter->close();
+    delete plotter;
+    delete scan_matcher;
 }
