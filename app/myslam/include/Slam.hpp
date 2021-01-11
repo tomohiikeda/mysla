@@ -7,6 +7,7 @@
 #include "IPlotter.hpp"
 #include "Pose2D.hpp"
 #include "PointCloud.hpp"
+#include "ScanMatcher.hpp"
 
 class Slam{
     public:
@@ -15,6 +16,7 @@ class Slam{
             odometer(odometer),
             plotter(plotter){
             running = false;
+            scan_matcher = new ScanMatcher();
         }
         bool init(void);
         bool start(void);
@@ -25,6 +27,7 @@ class Slam{
         ISensor *sensor;
         IOdometer *odometer;
         IPlotter *plotter;
+        ScanMatcher *scan_matcher;
         bool running;
         pthread_t slam_thread;
         Pose2D cur_pose;

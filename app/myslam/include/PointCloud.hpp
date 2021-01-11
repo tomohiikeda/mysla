@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include "Pose2D.hpp"
 
 class PointCloud{
     public:
@@ -36,7 +37,7 @@ class PointCloud{
                 to.add(points.at(i));
         }
 
-        void move(double x, double y){
+        void translate(double x, double y){
             for (size_t i=0; i<points.size(); i++) {
                 points.at(i).x += x;
                 points.at(i).y += x;
@@ -50,6 +51,11 @@ class PointCloud{
                 points.at(i).x  = x * std::cos(radian) - y * std::sin(radian);
                 points.at(i).y  = x * std::sin(radian) + y * std::cos(radian);
             }
+        }
+
+        void move(Pose2D movement){
+            this->rotate(movement.direction);
+            this->translate(movement.x, movement.y);
         }
 
         void save_to_file(const char *filename) const

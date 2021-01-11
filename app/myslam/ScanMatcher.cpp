@@ -26,6 +26,10 @@ Pose2D ScanMatcher::do_scan_matching(void) const
 {
     PointCloud temp_scan = *this->cur_scan;
     std::vector<uint32_t> associate_list;
+    Pose2D total_dev(0,0,0);
+
+    //this->debug_plotter->plot(&temp_scan, this->ref_scan);
+    //sleep(3);
 
     for (int iter=0; iter<100; iter++) {
         
@@ -34,30 +38,77 @@ Pose2D ScanMatcher::do_scan_matching(void) const
         this->data_associate(&temp_scan, this->ref_scan, associate_list);
 
         // その対応付けでどのくらい遷移させれば最小コストになるか求める。
-        Pose2D dev = minimize_cost_pose(&temp_scan, this->ref_scan, associate_list);
-        printf("[%]min_radian=%f\n", iter, dev.direction);
+        Pose2D dev = steepest_descent(&temp_scan, this->ref_scan, associate_list);
+        //printf("[%d]dx=%f, dy=%f, dtheta=%f\n", iter, dev.x, dev.y, dev.direction);
         
-        if (dev.direction == 0)
+        if (std::abs(dev.direction) < 0.0005)
             break;
+        
         // 計算した分移動する。
-        temp_scan.rotate(dev.direction);
-        temp_scan.move(dev.x, dev.y);
-        this->debug_plotter->plot(&temp_scan, this->ref_scan, associate_list);
-        sleep(3);
+        temp_scan.move(dev);
+        
+        total_dev.move_to(dev);
+
+        //this->debug_plotter->plot(&temp_scan, this->ref_scan, associate_list);
+        //sleep(0.3);
     }
 
-
-    Pose2D pose;
-    return pose;
+    return total_dev;
 }
 
 /**
- * @brief scanをどのくらい動かせばref_scanに対するコストが最小になるか求める
+ * @brief 対応点リストassociate_listに対して、
+ * scanをどのくらい動かせばref_scanに対するコストが最小になるか求める
  */
-Pose2D ScanMatcher::minimize_cost_pose(const PointCloud *scan,
-                                       const PointCloud *ref_scan,
-                                       const std::vector<uint32_t>& associate_list) const
+Pose2D ScanMatcher::steepest_descent(const PointCloud *scan,
+                                     const PointCloud *ref_scan,
+                                     const std::vector<uint32_t>& associate_list) const
 {
+    const double dd = 0.001;
+    const double da = 10;
+    const double kk = 0.0000001;
+    PointCloud temp_scan = *scan;
+    double ev = this->cost_function(&temp_scan, ref_scan, associate_list);
+    double total_dtheta = 0;
+    double total_dx = 0;
+    double total_dy = 0;
+
+    for (int i=0; i<30; i++) {
+        
+        PointCloud dtheta_scan = temp_scan;
+        dtheta_scan.rotate(dd);
+        double dtheta_ev =
+             (this->cost_function(&dtheta_scan, ref_scan, associate_list) - ev) / dd;
+        double dtheta = -kk * dtheta_ev;
+        temp_scan.rotate(dtheta);
+        total_dtheta += dtheta;
+
+        PointCloud dx_scan = temp_scan;
+        dx_scan.translate(da, 0);
+        double dx_ev =
+             (this->cost_function(&dx_scan, ref_scan, associate_list) - ev) / da;
+        double dx = -kk * dx_ev;
+        temp_scan.translate(dx, 0);
+        total_dx += dx;
+
+        PointCloud dy_scan = temp_scan;
+        dy_scan.translate(0, da);
+        double dy_ev =
+             (this->cost_function(&dy_scan, ref_scan, associate_list) - ev) / da;
+        double dy = -kk * dy_ev;
+        temp_scan.translate(0, dy);
+        total_dy += dy;
+
+        ev = this->cost_function(&temp_scan, ref_scan, associate_list);
+        
+        //this->plot_for_debug(&temp_scan, ref_scan, associate_list);
+        //sleep(0.5);
+    }
+    Pose2D dev(total_dx, total_dy, total_dtheta);
+    return dev;
+
+
+#if 0
     PointCloud temp_scan = *scan;
     double min_cost = 9999999999;
     double max_cost = 0;
@@ -67,16 +118,16 @@ Pose2D ScanMatcher::minimize_cost_pose(const PointCloud *scan,
         temp_scan.rotate(to_radian(0.25));
         double cost = this->cost_function(&temp_scan, ref_scan, associate_list);
         //plot_for_debug(&temp_scan, this->ref_scan, associate_list);
-        //sleep(0.5);
         if (cost < min_cost) {
             min_cost = cost;
             min_radian = to_radian(i*0.25);
         }
-        //wait_for_key();
     }
-
     Pose2D dev(0, 0, min_radian);
     return dev;
+
+#endif
+
 }
 
 /**
@@ -133,6 +184,7 @@ void ScanMatcher::plot_for_debug(const PointCloud *cur_scan,
                                  const PointCloud *ref_scan,
                                  const std::vector<uint32_t>& associate_list) const
 {
-    this->debug_plotter->plot(cur_scan, ref_scan, associate_list);
+    if (this->debug_plotter)
+        this->debug_plotter->plot(cur_scan, ref_scan, associate_list);
 }
 

@@ -22,11 +22,10 @@ static void ctrlc(int)
 {
     ctrl_c_pressed = true;
 }
-
-#if 0
 /**
  * @brief メイン関数
  */
+
 int main(int argc, const char *argv[])
 {
     Lidar lidar;
@@ -52,7 +51,7 @@ int main(int argc, const char *argv[])
 
     return EXIT_SUCCESS;
 }
-#endif
+#if 0
 
 int main(int argc, const char *argv[])
 {
@@ -63,7 +62,7 @@ int main(int argc, const char *argv[])
     plotter->open();
 
     ref_scan.load_from_file("pt_1.txt");
-    cur_scan.load_from_file("pt_2.txt");
+    cur_scan.load_from_file("pt_3.txt");
     scan_matcher->set_debug_plotter(plotter);
     scan_matcher->set_reference_scan(&ref_scan);
     scan_matcher->set_current_scan(&cur_scan);
@@ -78,3 +77,4 @@ int main(int argc, const char *argv[])
     delete plotter;
     delete scan_matcher;
 }
+#endif

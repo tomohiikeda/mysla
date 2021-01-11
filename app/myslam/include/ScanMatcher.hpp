@@ -16,9 +16,9 @@ class ScanMatcher {
         const IPlotter *debug_plotter;
         const PointCloud *cur_scan;
         const PointCloud *ref_scan;
-        Pose2D minimize_cost_pose(const PointCloud *scan,
-                                  const PointCloud *ref_scan,
-                                  const std::vector<uint32_t>& associate_list) const;
+        Pose2D steepest_descent(const PointCloud *scan,
+                                const PointCloud *ref_scan,
+                                const std::vector<uint32_t>& associate_list) const;
         void data_associate(const PointCloud *cur_scan,
                             const PointCloud *ref_scan,
                             std::vector<uint32_t>& associate_list) const;

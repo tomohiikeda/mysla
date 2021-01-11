@@ -68,36 +68,37 @@ void Slam::process_loop(void)
         return;
 
     pre_pc.copy_to(world_map);  // 初回
+    this->scan_matcher->set_reference_scan(&pre_pc);
     
     // ずっとループ
-    for (int loop_cnt=0; loop_cnt<4; loop_cnt++) {
-    //while (running == true) {
+    //for (int loop_cnt=0; loop_cnt<4; loop_cnt++) {
+    while (running == true) {
         
         if (sensor->get_point_cloud(&cur_pc) == false) {
             running = false;
             return;
         }
         
+        this->scan_matcher->set_current_scan(&cur_pc);
+        Pose2D movement = this->scan_matcher->do_scan_matching();
+        cur_pc.move(movement);
+        
+        this->plotter->plot(&cur_pc, &pre_pc);
+
         //update_world_map(cur_pc);
         //estimate_cur_pose(cur_pc);
-        cur_pc.copy_to(pre_pc);
-        plotter->plot(&cur_pc);
+        //cur_pc.copy_to(pre_pc);
+        //plotter->plot(&cur_pc);
 
-        char filename[20];
-        snprintf(filename, sizeof(filename), "pt_%d.txt", loop_cnt);
-        cur_pc.save_to_file(filename);
+        //char filename[20];
+        //snprintf(filename, sizeof(filename), "pt_%d.txt", loop_cnt);
+        //cur_pc.save_to_file(filename);
 
-        printf("%d\n", loop_cnt);
+        //printf("%d\n", loop_cnt);
         
-        sleep(1);
+        //sleep(1);
     }
     return;
-}
-
-void Slam::wait_for_key(void) const
-{
-    char aaa;
-    std::cin >> aaa;
 }
 
 /**
