@@ -49,7 +49,7 @@ void GnuplotPlotter::plot(const PointCloud *pc_0, const PointCloud *pc_1) const
     this->pc_to_tmpfile(pc_0, plotfile_0);
     this->pc_to_tmpfile(pc_1, plotfile_1);
 
-    fprintf(fd, "plot \"%s\",\"%s\" with points pointtype 7 pointsize 0.2\n",
+    fprintf(fd, "plot \"%s\" with points pointtype 7 pointsize 0.2, \"%s\" with points pointtype 7 pointsize 0.2\n",
             plotfile_0, plotfile_1);
     fflush(fd);
     return;
@@ -69,7 +69,7 @@ void GnuplotPlotter::plot(const PointCloud *pc_0,
     this->pc_to_tmpfile(pc_1, plotfile_1);
     this->associate_to_tmpfile(pc_0, pc_1, associate_list, plotfile_2);
 
-    fprintf(fd, "plot \"%s\",\"%s\" with points pointtype 7 pointsize 0.2, \"%s\" w lp\n",
+    fprintf(fd, "plot \"%s\" with points pointtype 7 pointsize 0.2 ,\"%s\" with points pointtype 7 pointsize 0.2, \"%s\" with linespoints pointtype 0\n",
             plotfile_0, plotfile_1, plotfile_2);
     fflush(fd);
     return;

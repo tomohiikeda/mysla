@@ -27,21 +27,25 @@ Pose2D ScanMatcher::do_scan_matching(void) const
     PointCloud temp_scan = *this->cur_scan;
     std::vector<uint32_t> associate_list;
     Pose2D total_dev(0,0,0);
+    Pose2D dev;
 
-    //this->debug_plotter->plot(&temp_scan, this->ref_scan);
-    //sleep(3);
+    this->debug_plotter->plot(&temp_scan, this->ref_scan);
+    sleep(3);
 
-    for (int iter=0; iter<100; iter++) {
+    for (int iter=0; iter<3000; iter++) {
         
         // データを対応付ける。
         associate_list.clear();
         this->data_associate(&temp_scan, this->ref_scan, associate_list);
 
         // その対応付けでどのくらい遷移させれば最小コストになるか求める。
-        Pose2D dev = steepest_descent(&temp_scan, this->ref_scan, associate_list);
-        //printf("[%d]dx=%f, dy=%f, dtheta=%f\n", iter, dev.x, dev.y, dev.direction);
-        
-        if (std::abs(dev.direction) < 0.0005)
+        //dev = steepest_descent(&temp_scan, this->ref_scan, associate_list);
+        dev = full_search(&temp_scan, this->ref_scan, associate_list);
+        printf("[%d]dx=%f, dy=%f, dtheta=%f\n", iter, dev.x, dev.y, dev.direction);
+
+        if (std::abs(dev.direction) < 0.0005 &&
+            std::abs(dev.x) < 0.0001 &&
+            std::abs(dev.y) < 0.0001)
             break;
         
         // 計算した分移動する。
@@ -49,11 +53,24 @@ Pose2D ScanMatcher::do_scan_matching(void) const
         
         total_dev.move_to(dev);
 
-        //this->debug_plotter->plot(&temp_scan, this->ref_scan, associate_list);
-        //sleep(0.3);
+        this->debug_plotter->plot(&temp_scan, this->ref_scan, associate_list);
+        sleep(1);
     }
+    printf("done\n");
 
     return total_dev;
+}
+
+double ScanMatcher::differential(const PointCloud *scan,
+                                 const PointCloud *ref_scan,
+                                 const std::vector<uint32_t>& associate_list,
+                                 double ev,
+                                 double dd,
+                                 double kk) const
+{
+    double d_ev =
+            (this->cost_function(scan, ref_scan, associate_list) - ev) / dd;
+    return -kk * d_ev;
 }
 
 /**
@@ -64,51 +81,56 @@ Pose2D ScanMatcher::steepest_descent(const PointCloud *scan,
                                      const PointCloud *ref_scan,
                                      const std::vector<uint32_t>& associate_list) const
 {
-    const double dd = 0.001;
-    const double da = 10;
-    const double kk = 0.0000001;
+    const double dd = 0.0001;
+    const double da = 5;
+    const double kk = 0.00000001;
     PointCloud temp_scan = *scan;
     double ev = this->cost_function(&temp_scan, ref_scan, associate_list);
     double total_dtheta = 0;
     double total_dx = 0;
     double total_dy = 0;
+    PointCloud dtheta_scan = temp_scan;
+    PointCloud dx_scan = temp_scan;
+    PointCloud dy_scan = temp_scan;
 
-    for (int i=0; i<30; i++) {
+    for (int i=0; i<1000; i++) {
         
-        PointCloud dtheta_scan = temp_scan;
+        dtheta_scan = temp_scan;
+        dx_scan = temp_scan;
+        dy_scan = temp_scan;
+
         dtheta_scan.rotate(dd);
-        double dtheta_ev =
-             (this->cost_function(&dtheta_scan, ref_scan, associate_list) - ev) / dd;
-        double dtheta = -kk * dtheta_ev;
-        temp_scan.rotate(dtheta);
-        total_dtheta += dtheta;
-
-        PointCloud dx_scan = temp_scan;
         dx_scan.translate(da, 0);
-        double dx_ev =
-             (this->cost_function(&dx_scan, ref_scan, associate_list) - ev) / da;
-        double dx = -kk * dx_ev;
-        temp_scan.translate(dx, 0);
-        total_dx += dx;
-
-        PointCloud dy_scan = temp_scan;
         dy_scan.translate(0, da);
-        double dy_ev =
-             (this->cost_function(&dy_scan, ref_scan, associate_list) - ev) / da;
-        double dy = -kk * dy_ev;
+
+        double dtheta = differential(&dtheta_scan, ref_scan, associate_list, ev, dd, kk);
+        double dx = differential(&dx_scan, ref_scan, associate_list, ev, dd, kk);
+        double dy = differential(&dy_scan, ref_scan, associate_list, ev, dd, kk);
+
+        temp_scan.rotate(dtheta);
+        temp_scan.translate(dx, 0);
         temp_scan.translate(0, dy);
-        total_dy += dy;
 
         ev = this->cost_function(&temp_scan, ref_scan, associate_list);
         
+        total_dtheta += dtheta;
+        total_dx += dx;
+        total_dy += dy;
+
         //this->plot_for_debug(&temp_scan, ref_scan, associate_list);
-        //sleep(0.5);
     }
     Pose2D dev(total_dx, total_dy, total_dtheta);
     return dev;
+}
 
-
-#if 0
+/**
+ * @brief 対応点リストassociate_listに対して、
+ * scanをどのくらい動かせばref_scanに対するコストが最小になるか求める
+ */
+Pose2D ScanMatcher::full_search(const PointCloud *scan,
+                                const PointCloud *ref_scan,
+                                const std::vector<uint32_t>& associate_list) const
+{
     PointCloud temp_scan = *scan;
     double min_cost = 9999999999;
     double max_cost = 0;
@@ -125,9 +147,6 @@ Pose2D ScanMatcher::steepest_descent(const PointCloud *scan,
     }
     Pose2D dev(0, 0, min_radian);
     return dev;
-
-#endif
-
 }
 
 /**

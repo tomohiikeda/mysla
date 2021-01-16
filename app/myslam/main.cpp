@@ -22,11 +22,8 @@ static void ctrlc(int)
 {
     ctrl_c_pressed = true;
 }
-/**
- * @brief メイン関数
- */
 
-int main(int argc, const char *argv[])
+int slam_main(int argc, const char *argv[])
 {
     Lidar lidar;
     PulseSensor pulse_sensor;
@@ -51,9 +48,8 @@ int main(int argc, const char *argv[])
 
     return EXIT_SUCCESS;
 }
-#if 0
 
-int main(int argc, const char *argv[])
+int scan_matching_main(int argc, const char *argv[])
 {
     GnuplotPlotter *plotter = new GnuplotPlotter();
     PointCloud cur_scan;
@@ -61,8 +57,8 @@ int main(int argc, const char *argv[])
     ScanMatcher *scan_matcher = new ScanMatcher();
     plotter->open();
 
-    ref_scan.load_from_file("pt_1.txt");
-    cur_scan.load_from_file("pt_3.txt");
+    ref_scan.load_from_file("pt_0.txt");
+    cur_scan.load_from_file("pt_2.txt");
     scan_matcher->set_debug_plotter(plotter);
     scan_matcher->set_reference_scan(&ref_scan);
     scan_matcher->set_current_scan(&cur_scan);
@@ -77,4 +73,14 @@ int main(int argc, const char *argv[])
     delete plotter;
     delete scan_matcher;
 }
-#endif
+
+/**
+ * @brief メイン関数
+ */
+int main(int argc, const char *argv[])
+{
+    if (argc > 1)
+        return slam_main(argc, argv);
+    else
+        return scan_matching_main(argc, argv);
+}

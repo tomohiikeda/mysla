@@ -16,9 +16,18 @@ class ScanMatcher {
         const IPlotter *debug_plotter;
         const PointCloud *cur_scan;
         const PointCloud *ref_scan;
+        double differential(const PointCloud *scan,
+                            const PointCloud *ref_scan,
+                            const std::vector<uint32_t>& associate_list,
+                            double ev,
+                            double dd,
+                            double kk) const;
         Pose2D steepest_descent(const PointCloud *scan,
                                 const PointCloud *ref_scan,
                                 const std::vector<uint32_t>& associate_list) const;
+        Pose2D full_search(const PointCloud *scan,
+                           const PointCloud *ref_scan,
+                           const std::vector<uint32_t>& associate_list) const;
         void data_associate(const PointCloud *cur_scan,
                             const PointCloud *ref_scan,
                             std::vector<uint32_t>& associate_list) const;
