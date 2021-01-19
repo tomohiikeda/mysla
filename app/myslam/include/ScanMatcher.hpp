@@ -32,6 +32,12 @@ class ScanMatcher {
                             const PointCloud *ref_scan,
                             std::vector<uint32_t>& associate_list) const;
         uint32_t find_nearest_index(const Point point, const PointCloud *pc) const;
+        double simple_distance(const PointCloud *cur_scan,
+                               const PointCloud *ref_scan,
+                               const std::vector<uint32_t>& associate_list) const;
+        double vertical_distance(const PointCloud *cur_scan,
+                                 const PointCloud *ref_scan,
+                                 const std::vector<uint32_t>& associate_list) const;
         double cost_function(const PointCloud *cur_scan,
                              const PointCloud *ref_scan,
                              const std::vector<uint32_t>& associate_list) const;

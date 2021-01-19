@@ -11,7 +11,7 @@
 #include "PulseSensor.hpp"
 #include "Slam.hpp"
 #include "ScanMatcher.hpp"
-
+#include <string.h>
 
 /**
  * @brief Ctrl+Cを押されたときのハンドラ
@@ -49,6 +49,32 @@ int slam_main(int argc, const char *argv[])
     return EXIT_SUCCESS;
 }
 
+int save_main(int argc, const char *argv[])
+{
+    Lidar lidar;
+    if(lidar.init() == false)
+        return false;
+
+    if(lidar.start() == false)
+        return EXIT_FAILURE;
+
+    PointCloud cur_pc;
+    for (int i=0; i<4; i++) {
+        if (lidar.get_point_cloud(&cur_pc) == false) {
+            goto exit;
+        }
+        char filename[20];
+        snprintf(filename, sizeof(filename), "pt_%d.txt", i);
+        cur_pc.save_to_file(filename);
+        printf("%d\n", i);
+        sleep(3);
+    }
+
+exit:
+    lidar.stop();
+    return EXIT_SUCCESS;
+}
+
 int scan_matching_main(int argc, const char *argv[])
 {
     GnuplotPlotter *plotter = new GnuplotPlotter();
@@ -58,7 +84,11 @@ int scan_matching_main(int argc, const char *argv[])
     plotter->open();
 
     ref_scan.load_from_file("pt_0.txt");
-    cur_scan.load_from_file("pt_2.txt");
+    cur_scan.load_from_file("pt_3.txt");
+    
+    ref_scan.analyse_points();
+    ref_scan.debug_print();
+
     scan_matcher->set_debug_plotter(plotter);
     scan_matcher->set_reference_scan(&ref_scan);
     scan_matcher->set_current_scan(&cur_scan);
@@ -79,8 +109,12 @@ int scan_matching_main(int argc, const char *argv[])
  */
 int main(int argc, const char *argv[])
 {
-    if (argc > 1)
+    if (argc > 1) {
+        if (!strcmp(argv[1], "save"))
+            return save_main(argc, argv);
+        else if (!strcmp(argv[1], "matching"))
+            return scan_matching_main(argc, argv);
+    } else {
         return slam_main(argc, argv);
-    else
-        return scan_matching_main(argc, argv);
+    }
 }

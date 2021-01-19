@@ -1,5 +1,5 @@
 #include "ScanMatcher.hpp"
-#include "Common.h"
+#include "Util.hpp"
 #include <unistd.h>
 
 void ScanMatcher::set_debug_plotter(const IPlotter *plotter)
@@ -29,19 +29,18 @@ Pose2D ScanMatcher::do_scan_matching(void) const
     Pose2D total_dev(0,0,0);
     Pose2D dev;
 
-    this->debug_plotter->plot(&temp_scan, this->ref_scan);
-    sleep(3);
+    //this->debug_plotter->plot(&temp_scan, this->ref_scan);
+    //sleep(3);
 
-    for (int iter=0; iter<3000; iter++) {
+    for (int iter=0; iter<100; iter++) {
         
         // データを対応付ける。
         associate_list.clear();
         this->data_associate(&temp_scan, this->ref_scan, associate_list);
 
         // その対応付けでどのくらい遷移させれば最小コストになるか求める。
-        //dev = steepest_descent(&temp_scan, this->ref_scan, associate_list);
-        dev = full_search(&temp_scan, this->ref_scan, associate_list);
-        printf("[%d]dx=%f, dy=%f, dtheta=%f\n", iter, dev.x, dev.y, dev.direction);
+        dev = steepest_descent(&temp_scan, this->ref_scan, associate_list);
+        //printf("[%d]dx=%f, dy=%f, dtheta=%f\n", iter, dev.x, dev.y, dev.direction);
 
         if (std::abs(dev.direction) < 0.0005 &&
             std::abs(dev.x) < 0.0001 &&
@@ -50,14 +49,8 @@ Pose2D ScanMatcher::do_scan_matching(void) const
         
         // 計算した分移動する。
         temp_scan.move(dev);
-        
         total_dev.move_to(dev);
-
-        this->debug_plotter->plot(&temp_scan, this->ref_scan, associate_list);
-        sleep(1);
     }
-    printf("done\n");
-
     return total_dev;
 }
 
@@ -81,7 +74,7 @@ Pose2D ScanMatcher::steepest_descent(const PointCloud *scan,
                                      const PointCloud *ref_scan,
                                      const std::vector<uint32_t>& associate_list) const
 {
-    const double dd = 0.0001;
+    const double dd = 0.000001;
     const double da = 5;
     const double kk = 0.00000001;
     PointCloud temp_scan = *scan;
@@ -93,7 +86,7 @@ Pose2D ScanMatcher::steepest_descent(const PointCloud *scan,
     PointCloud dx_scan = temp_scan;
     PointCloud dy_scan = temp_scan;
 
-    for (int i=0; i<1000; i++) {
+    for (int i=0; i<100; i++) {
         
         dtheta_scan = temp_scan;
         dx_scan = temp_scan;
@@ -112,12 +105,10 @@ Pose2D ScanMatcher::steepest_descent(const PointCloud *scan,
         temp_scan.translate(0, dy);
 
         ev = this->cost_function(&temp_scan, ref_scan, associate_list);
-        
+
         total_dtheta += dtheta;
         total_dx += dx;
         total_dy += dy;
-
-        //this->plot_for_debug(&temp_scan, ref_scan, associate_list);
     }
     Pose2D dev(total_dx, total_dy, total_dtheta);
     return dev;
@@ -133,13 +124,11 @@ Pose2D ScanMatcher::full_search(const PointCloud *scan,
 {
     PointCloud temp_scan = *scan;
     double min_cost = 9999999999;
-    double max_cost = 0;
     double min_radian = 0;
 
     for (int i=0; i<1440; i++) {
         temp_scan.rotate(to_radian(0.25));
         double cost = this->cost_function(&temp_scan, ref_scan, associate_list);
-        //plot_for_debug(&temp_scan, this->ref_scan, associate_list);
         if (cost < min_cost) {
             min_cost = cost;
             min_radian = to_radian(i*0.25);
@@ -156,7 +145,7 @@ void ScanMatcher::data_associate(const PointCloud *cur_scan,
                                  const PointCloud *ref_scan,
                                  std::vector<uint32_t>& associate_list) const
 {
-    for (int i=0; i<cur_scan->size(); i++) {
+    for (size_t i=0; i<cur_scan->size(); i++) {
         Point cur_point = cur_scan->at(i);
         uint32_t nearest_index = find_nearest_index(cur_point, this->ref_scan);
         associate_list.push_back(nearest_index);
@@ -171,7 +160,7 @@ uint32_t ScanMatcher::find_nearest_index(const Point point, const PointCloud *pc
 {
     double min_dist = 999999999;
     uint32_t min_index = 0;
-    for (int i=0; i<pc->size(); i++) {
+    for (size_t i=0; i<pc->size(); i++) {
         const Point ref_point = pc->at(i);
         double dist = point.distance_to(ref_point);
         if (dist < min_dist) {
@@ -182,12 +171,9 @@ uint32_t ScanMatcher::find_nearest_index(const Point point, const PointCloud *pc
     return min_index;
 }
 
-/**
- * @brief コスト関数
- */
-double ScanMatcher::cost_function(const PointCloud *cur_scan,
-                                  const PointCloud *ref_scan,
-                                  const std::vector<uint32_t>& associate_list) const
+double ScanMatcher::simple_distance(const PointCloud *cur_scan,
+                                    const PointCloud *ref_scan,
+                                    const std::vector<uint32_t>& associate_list) const
 {
     double dist_sum = 0;
     for (size_t i = 0; i < associate_list.size(); i++) {
@@ -197,6 +183,35 @@ double ScanMatcher::cost_function(const PointCloud *cur_scan,
         dist_sum += dist;
     }
     return dist_sum;
+}
+
+double ScanMatcher::vertical_distance(const PointCloud *cur_scan,
+                                      const PointCloud *ref_scan,
+                                      const std::vector<uint32_t>& associate_list) const
+{
+    double dist_sum = 0;
+    uint32_t nn = 0;
+    for (size_t i = 0; i < associate_list.size(); i++) {
+        Point cur_point = cur_scan->at(i);
+        Point ref_point = ref_scan->at(associate_list.at(i));
+        double dist = cur_point.vertical_distance_to(ref_point);
+        dist_sum += dist;
+
+        if (dist)
+            nn++;
+    }
+    return dist_sum / nn;
+}
+
+/**
+ * @brief コスト関数
+ */
+double ScanMatcher::cost_function(const PointCloud *cur_scan,
+                                  const PointCloud *ref_scan,
+                                  const std::vector<uint32_t>& associate_list) const
+{
+    return simple_distance(cur_scan, ref_scan, associate_list);
+    //return vertical_distance(cur_scan, ref_scan, associate_list);
 }
 
 void ScanMatcher::plot_for_debug(const PointCloud *cur_scan,

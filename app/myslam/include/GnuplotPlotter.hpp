@@ -19,6 +19,7 @@ class GnuplotPlotter: public IPlotter{
         void pc_to_tmpfile(const PointCloud *pc, const char *plotfile) const;
         void associate_to_tmpfile(const PointCloud *cur_pc, const PointCloud *ref_pc,
             const std::vector<uint32_t>& associate_list, const char *filename) const;
+        void normal_to_tmpfile(const PointCloud *pc, const char *filename) const;
 
     private:
 };

@@ -9,8 +9,8 @@ bool GnuplotPlotter::open(void)
     if (fd == NULL)
         return false;
 
-    fprintf(fd, "set xr[-5000:5000]\n");
-    fprintf(fd, "set yr[-5000:5000]\n");
+    fprintf(fd, "set xr[-3000:3000]\n");
+    fprintf(fd, "set yr[-3000:3000]\n");
     fprintf(fd, "set size square\n");
     fflush(fd);
     return true;
@@ -46,11 +46,16 @@ void GnuplotPlotter::plot(const PointCloud *pc_0, const PointCloud *pc_1) const
 
     const char *plotfile_0 = "/tmp/plot_0.dat";
     const char *plotfile_1 = "/tmp/plot_1.dat";
+    const char *normalfile_0 = "/tmp/normal_0.dat";
     this->pc_to_tmpfile(pc_0, plotfile_0);
     this->pc_to_tmpfile(pc_1, plotfile_1);
+    this->normal_to_tmpfile(pc_1, normalfile_0);
 
-    fprintf(fd, "plot \"%s\" with points pointtype 7 pointsize 0.2, \"%s\" with points pointtype 7 pointsize 0.2\n",
-            plotfile_0, plotfile_1);
+    fprintf(fd, "plot \
+                \"%s\" with points pointtype 7 pointsize 0.2, \
+                \"%s\" with points pointtype 7 pointsize 0.2, \
+                \"%s\" with linespoints pointtype 0\n",
+            plotfile_0, plotfile_1, normalfile_0);
     fflush(fd);
     return;
 }
@@ -94,6 +99,20 @@ void GnuplotPlotter::associate_to_tmpfile(const PointCloud *cur_pc, const PointC
         ofs << cur_point.x << " " << cur_point.y << std::endl;
         ofs << ref_point.x << " " << ref_point.y << std::endl;
         ofs << std::endl;
+    }
+    ofs.close();
+}
+
+void GnuplotPlotter::normal_to_tmpfile(const PointCloud *pc, const char *filename) const
+{
+    std::ofstream ofs(filename);
+    for (size_t i = 0; i < pc->size(); i++) {
+        Point pt = pc->at(i);
+        if (pt.normal.x || pt.normal.y) {
+            ofs << pt.x << " " << pt.y << std::endl;
+            ofs << pt.x + pt.normal.x * 100 << " " << pt.y + pt.normal.y * 100 << std::endl;
+            ofs << std::endl;
+        }
     }
     ofs.close();
 }
