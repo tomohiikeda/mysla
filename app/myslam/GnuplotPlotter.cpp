@@ -31,11 +31,10 @@ void GnuplotPlotter::plot(const PointCloud *pc) const
     if (fd == NULL)
         return;
 
-    const char *plotfile = "/tmp/plot.dat";
-    this->pc_to_tmpfile(pc, plotfile);
+    const char *data_var = "data";
+    this->input_points(pc, data_var);
 
-    fprintf(fd, "plot \"%s\" with points pointtype 7 pointsize 0.2\n", plotfile);
-    fflush(fd);
+    fprintf(fd, "plot \"$%s\" with points pointtype 7 pointsize 0.2\n", data_var);
     return;
 }
 
@@ -44,19 +43,24 @@ void GnuplotPlotter::plot(const PointCloud *pc_0, const PointCloud *pc_1) const
     if (fd == NULL)
         return;
 
-    const char *plotfile_0 = "/tmp/plot_0.dat";
-    const char *plotfile_1 = "/tmp/plot_1.dat";
-    const char *normalfile_0 = "/tmp/normal_0.dat";
-    this->pc_to_tmpfile(pc_0, plotfile_0);
-    this->pc_to_tmpfile(pc_1, plotfile_1);
-    this->normal_to_tmpfile(pc_1, normalfile_0);
+    const char *plotfile_0 = "data_0";
+    const char *plotfile_1 = "data_1";
+    const char *normalfile_0 = "normal";
+    this->input_points(pc_0, plotfile_0);
+    this->input_points(pc_1, plotfile_1);
+    this->input_normal(pc_1, normalfile_0);
 
+    //fprintf(fd, "plot \
+    //            \"$%s\" with points pointtype 7 pointsize 0.2, \
+    //            \"$%s\" with points pointtype 7 pointsize 0.2, \
+    //            \"$%s\" with linespoints pointtype 0 \
+    //            \n",
+    //        plotfile_0, plotfile_1, normalfile_0);
     fprintf(fd, "plot \
-                \"%s\" with points pointtype 7 pointsize 0.2, \
-                \"%s\" with points pointtype 7 pointsize 0.2, \
-                \"%s\" with linespoints pointtype 0\n",
-            plotfile_0, plotfile_1, normalfile_0);
-    fflush(fd);
+                \"$%s\" with points pointtype 7 pointsize 0.2, \
+                \"$%s\" with points pointtype 7 pointsize 0.2, \
+                \n",
+            plotfile_0, plotfile_1);
     return;
 }
 
@@ -67,53 +71,55 @@ void GnuplotPlotter::plot(const PointCloud *pc_0,
     if (fd == NULL)
         return;
 
-    const char *plotfile_0 = "/tmp/plot_0.dat";
-    const char *plotfile_1 = "/tmp/plot_1.dat";
-    const char *plotfile_2 = "/tmp/segments.dat";
-    this->pc_to_tmpfile(pc_0, plotfile_0);
-    this->pc_to_tmpfile(pc_1, plotfile_1);
-    this->associate_to_tmpfile(pc_0, pc_1, associate_list, plotfile_2);
+    const char *plotfile_0 = "data_0";
+    const char *plotfile_1 = "data_1";
+    const char *plotfile_2 = "associates";
+    this->input_points(pc_0, plotfile_0);
+    this->input_points(pc_1, plotfile_1);
+    this->input_associates(pc_0, pc_1, associate_list, plotfile_2);
 
-    fprintf(fd, "plot \"%s\" with points pointtype 7 pointsize 0.2 ,\"%s\" with points pointtype 7 pointsize 0.2, \"%s\" with linespoints pointtype 0\n",
+    fprintf(fd, "plot \
+                \"$%s\" with points pointtype 7 pointsize 0.2, \
+                \"$%s\" with points pointtype 7 pointsize 0.2, \
+                \"$%s\" with linespoints pointtype 0\n",
             plotfile_0, plotfile_1, plotfile_2);
-    fflush(fd);
     return;
 }
 
-void GnuplotPlotter::pc_to_tmpfile(const PointCloud *pc, const char *plotfile) const
+void GnuplotPlotter::input_points(const PointCloud *pc, const char *data_var) const
 {
-    std::ofstream ofs(plotfile);
-    for (size_t i = 0; i < pc->size(); i++) {
-        ofs << pc->at(i).x << " " << pc->at(i).y << std::endl;
+    fprintf(fd, "$%s << EOD\n", data_var);
+    for (size_t i = 0; i< pc->size(); i++) {
+        fprintf(fd, "%f %f\n", pc->at(i).x, pc->at(i).y);
     }
-    ofs.close();
+    fprintf(fd, "EOD\n");
 }
 
-void GnuplotPlotter::associate_to_tmpfile(const PointCloud *cur_pc, const PointCloud *ref_pc,
-            const std::vector<uint32_t>& associate_list, const char *filename) const
+void GnuplotPlotter::input_associates(const PointCloud *cur_pc, const PointCloud *ref_pc,
+            const std::vector<uint32_t>& associate_list, const char *data_var) const
 {
-    std::ofstream ofs(filename);
+    fprintf(fd, "$%s << EOD\n", data_var);
     for (size_t i = 0; i < associate_list.size(); i++) {
         Point cur_point = cur_pc->at(i);
         Point ref_point = ref_pc->at(associate_list.at(i));
-        ofs << cur_point.x << " " << cur_point.y << std::endl;
-        ofs << ref_point.x << " " << ref_point.y << std::endl;
-        ofs << std::endl;
+        fprintf(fd, "%f %f\n", cur_point.x, cur_point.y);
+        fprintf(fd, "%f %f\n", ref_point.x, ref_point.y);
+        fprintf(fd, "\n");
     }
-    ofs.close();
+    fprintf(fd, "EOD\n");
 }
 
-void GnuplotPlotter::normal_to_tmpfile(const PointCloud *pc, const char *filename) const
+void GnuplotPlotter::input_normal(const PointCloud *pc, const char *data_var) const
 {
-    std::ofstream ofs(filename);
+    fprintf(fd, "$%s << EOD\n", data_var);
     for (size_t i = 0; i < pc->size(); i++) {
         Point pt = pc->at(i);
         if (pt.normal.x || pt.normal.y) {
-            ofs << pt.x << " " << pt.y << std::endl;
-            ofs << pt.x + pt.normal.x * 100 << " " << pt.y + pt.normal.y * 100 << std::endl;
-            ofs << std::endl;
+            fprintf(fd, "%f %f\n", pt.x, pt.y);
+            fprintf(fd, "%f %f\n", pt.x + pt.normal.x * 100, pt.y + pt.normal.y * 100);
+            fprintf(fd, "\n");
         }
     }
-    ofs.close();
+    fprintf(fd, "EOD\n");
 }
 

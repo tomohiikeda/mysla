@@ -25,6 +25,8 @@ static void ctrlc(int)
 
 int slam_main(int argc, const char *argv[])
 {
+    printf("run SLAM mode\n");
+
     Lidar lidar;
     PulseSensor pulse_sensor;
     GnuplotPlotter plotter;
@@ -51,6 +53,8 @@ int slam_main(int argc, const char *argv[])
 
 int save_main(int argc, const char *argv[])
 {
+    printf("run save mode\n");
+
     Lidar lidar;
     if(lidar.init() == false)
         return false;
@@ -77,14 +81,15 @@ exit:
 
 int scan_matching_main(int argc, const char *argv[])
 {
+    printf("run matching mode\n");
     GnuplotPlotter *plotter = new GnuplotPlotter();
     PointCloud cur_scan;
     PointCloud ref_scan;
-    ScanMatcher *scan_matcher = new ScanMatcher();
+    ScanMatcher *scan_matcher = new ScanMatcher(true);
     plotter->open();
 
-    ref_scan.load_from_file("pt_0.txt");
-    cur_scan.load_from_file("pt_3.txt");
+    ref_scan.load_from_file("ref_scan.dat");
+    cur_scan.load_from_file("cur_scan.dat");
     
     ref_scan.analyse_points();
     ref_scan.debug_print();
@@ -109,11 +114,20 @@ int scan_matching_main(int argc, const char *argv[])
  */
 int main(int argc, const char *argv[])
 {
-    if (argc > 1) {
-        if (!strcmp(argv[1], "save"))
+    if (argc > 2) {
+        printf ("Argument is too much.");
+        return EXIT_FAILURE;
+    }
+
+    if (argc == 2) {
+        if (!strcmp(argv[1], "save")) {
             return save_main(argc, argv);
-        else if (!strcmp(argv[1], "matching"))
+        } else if (!strcmp(argv[1], "matching")) {
             return scan_matching_main(argc, argv);
+        } else {
+            printf("Invalid Argument \"%s\"\n", argv[1]);
+            return EXIT_FAILURE;
+        }
     } else {
         return slam_main(argc, argv);
     }

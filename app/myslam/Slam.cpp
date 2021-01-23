@@ -49,7 +49,7 @@ void Slam::stop(void)
     running = false;
     pthread_join(slam_thread, NULL);
     sensor->stop();
-    //odometer->stop();
+    odometer->stop();
     plotter->close();
 }
 
@@ -63,6 +63,9 @@ void Slam::process_loop(void)
     PointCloud cur_pc;
     
     running = true;
+
+    double od_r, od_l;
+    odometer->get_odometory(&od_r, &od_l);
 
     if (sensor->get_point_cloud(&pre_pc) == false)
         return;
@@ -78,12 +81,15 @@ void Slam::process_loop(void)
             running = false;
             return;
         }
-        
         this->scan_matcher->set_current_scan(&cur_pc);
         Pose2D movement = this->scan_matcher->do_scan_matching();
         cur_pc.move(movement);
         this->plotter->plot(&cur_pc, &pre_pc);
-
+        
+        //cur_pc.copy_to(pre_pc);
+        //this->scan_matcher->set_reference_scan(&pre_pc);
+        
+        
         //update_world_map(cur_pc);
         //estimate_cur_pose(cur_pc);
         //cur_pc.copy_to(pre_pc);
