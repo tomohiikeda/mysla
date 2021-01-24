@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include "GnuplotPlotter.hpp"
 #include "Lidar.hpp"
-#include "PulseSensor.hpp"
+#include "PulseCounter.hpp"
 #include "Slam.hpp"
 #include "ScanMatcher.hpp"
 #include <string.h>
@@ -28,7 +28,7 @@ int slam_main(int argc, const char *argv[])
     printf("run SLAM mode\n");
 
     Lidar lidar;
-    PulseSensor pulse_sensor;
+    PulseCounter pulse_sensor;
     GnuplotPlotter plotter;
     Slam slam(&lidar, &pulse_sensor, &plotter);
 

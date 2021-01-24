@@ -3,7 +3,7 @@
 #include "IOdometer.hpp"
 #include <stdio.h>
 
-class PulseSensor : public IOdometer{
+class PulseCounter : public IOdometer{
     public:
         bool init(void);
         bool start(void);

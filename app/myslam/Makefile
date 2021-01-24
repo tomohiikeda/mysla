@@ -23,7 +23,7 @@ MODULE_NAME := $(notdir $(CURDIR))
 
 include $(HOME_TREE)/mak_def.inc
 
-CXXSRC += main.cpp Lidar.cpp PulseSensor.cpp GnuplotPlotter.cpp Slam.cpp ScanMatcher.cpp PointCloud.cpp Util.cpp
+CXXSRC += main.cpp Lidar.cpp PulseCounter.cpp GnuplotPlotter.cpp Slam.cpp ScanMatcher.cpp PointCloud.cpp Util.cpp
 C_INCLUDES += -I$(CURDIR)/../../sdk/include -I$(CURDIR)/../../sdk/src -I$(CURDIR)/include
 
 EXTRA_OBJ := 

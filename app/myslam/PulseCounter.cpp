@@ -1,6 +1,6 @@
-#include "PulseSensor.hpp"
+#include "PulseCounter.hpp"
 
-bool PulseSensor::init(void)
+bool PulseCounter::init(void)
 {
     this->fd_r = fopen("/dev/rtcounter_r0", "r");
     if (!this->fd_r) {
@@ -21,12 +21,12 @@ err_0:
     return false;
 }
 
-bool PulseSensor::start(void)
+bool PulseCounter::start(void)
 {
     return true;
 }
 
-void PulseSensor::stop(void)
+void PulseCounter::stop(void)
 {
     if (this->fd_r)
         fclose(fd_r);
@@ -35,12 +35,13 @@ void PulseSensor::stop(void)
         fclose(fd_l);
 }
 
-void PulseSensor::get_odometory(double *od_r, double *od_l)
+void PulseCounter::get_odometory(double *od_r, double *od_l)
 {
     if (!fd_r || !fd_l)
         return;
 
     char buf[100];
-    fread(buf, sizeof(buf), 1, fd_r);
+    fseek(fd_r, 0, SEEK_SET);
+    fgets(buf, sizeof(buf), fd_r);
     printf("%s\n", buf);
 }    
