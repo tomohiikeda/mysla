@@ -64,8 +64,6 @@ void Slam::process_loop(void)
     
     running = true;
 
-    double od_r, od_l;
-    odometer->get_odometory(&od_r, &od_l);
 
     if (sensor->get_point_cloud(&pre_pc) == false)
         return;
@@ -76,7 +74,10 @@ void Slam::process_loop(void)
 
     // ずっとループ
     while (running == true) {
-        
+
+        double od_r, od_l;
+        odometer->get_odometory(&od_r, &od_l);
+
         if (sensor->get_point_cloud(&cur_pc) == false) {
             running = false;
             return;

@@ -109,12 +109,12 @@ Pose2D ScanMatcher::do_scan_matching(void) const
         // マッチングを終わらせるかチェック
         uint32_t done = is_matching_done(ev, pre_ev, ev_history, history_num, cost_type);
         if (done) {
-            printf("done reason=%d, iter=%d\n", done, iter);
+            //printf("done reason=%d, iter=%d\n", done, iter);
             break;
         }
     }
 
-    printf("done iter=%d ev=%f\n", iter, ev);
+    //printf("done iter=%d ev=%f\n", iter, ev);
     if (ev < 3000) {
         total_dev.x = 0;
         total_dev.y = 0;

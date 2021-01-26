@@ -11,6 +11,7 @@
 #include "PulseCounter.hpp"
 #include "Slam.hpp"
 #include "ScanMatcher.hpp"
+#include "RemoteController.hpp"
 #include <string.h>
 
 /**
@@ -31,22 +32,24 @@ int slam_main(int argc, const char *argv[])
     PulseCounter pulse_sensor;
     GnuplotPlotter plotter;
     Slam slam(&lidar, &pulse_sensor, &plotter);
+    RemoteController remocon;
 
-    if (slam.init() == false) {
+    if (slam.init() == false)
         return EXIT_FAILURE;
-    }
 
     signal(SIGINT, ctrlc);
 
-    if (slam.start() == false) {
-        return EXIT_SUCCESS;
-    }
+    if (slam.start() == false)
+        return EXIT_FAILURE;
 
-    while (ctrl_c_pressed == false) {
+    if (remocon.init() == false)
+        return EXIT_FAILURE;
+
+    while (ctrl_c_pressed == false)
         sleep(1);
-    }
 
     slam.stop();
+    remocon.deinit();
 
     return EXIT_SUCCESS;
 }
