@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdint.h>
+#include "Common.hpp"
 #include "PointCloud.hpp"
 
 class IPlotter{

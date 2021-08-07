@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include "Common.hpp"
 #include <stddef.h>
 #include <cmath>
 #include <cstdlib>
@@ -8,6 +8,11 @@
 #include "PointCloud.hpp"
 
 #define _countof(_Array) (int)(sizeof(_Array) / sizeof(_Array[0]))
+
+Lidar::~Lidar(void)
+{
+    this->stop();
+}
 
 /**
  * @brief Lidar初期化関数

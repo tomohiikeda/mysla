@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdint.h>
+#include "Common.hpp"
 #include "ISensor.hpp"
 #include "Lidar.hpp"
 #include "rplidar.h"
@@ -9,6 +9,7 @@ using namespace rp::standalone::rplidar;
 
 class Lidar : public ISensor{
     public:
+        ~Lidar(void);
         bool init(void);
         bool start(void);
         void stop(void);

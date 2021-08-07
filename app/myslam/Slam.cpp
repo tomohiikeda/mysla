@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include "Common.hpp"
 #include <iostream>
 #include <unistd.h>
 #include "Slam.hpp"

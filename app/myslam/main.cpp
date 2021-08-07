@@ -11,8 +11,9 @@
 #include "PulseCounter.hpp"
 #include "Slam.hpp"
 #include "ScanMatcher.hpp"
-#include "RemoteController.hpp"
+#include "RemoteControl.hpp"
 #include <string.h>
+#include "Motor.hpp"
 
 /**
  * @brief Ctrl+Cを押されたときのハンドラ
@@ -32,15 +33,23 @@ int slam_main(int argc, const char *argv[])
     PulseCounter pulse_sensor;
     GnuplotPlotter plotter;
     Slam slam(&lidar, &pulse_sensor, &plotter);
-    RemoteController remocon;
+    Motor motor;
+    RemoteControl remocon(motor);
 
     if (slam.init() == false)
         return EXIT_FAILURE;
 
     signal(SIGINT, ctrlc);
 
-    if (slam.start() == false)
+    if (slam.start() == false) {
+        printf("failed to start SLAM\n");
         return EXIT_FAILURE;
+    }
+
+    if (motor.init() == false) {
+        printf("failed to motor init\n");
+        return EXIT_FAILURE;
+    }
 
     if (remocon.init() == false)
         return EXIT_FAILURE;
@@ -50,6 +59,7 @@ int slam_main(int argc, const char *argv[])
 
     slam.stop();
     remocon.deinit();
+    motor.deinit();
 
     return EXIT_SUCCESS;
 }
@@ -120,9 +130,7 @@ int main(int argc, const char *argv[])
     if (argc > 2) {
         printf ("Argument is too much.");
         return EXIT_FAILURE;
-    }
-
-    if (argc == 2) {
+    } else if (argc == 2) {
         if (!strcmp(argv[1], "save")) {
             return save_main(argc, argv);
         } else if (!strcmp(argv[1], "matching")) {
