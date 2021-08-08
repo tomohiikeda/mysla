@@ -36,10 +36,10 @@ HOME_TREE := .
 
 MAKE_TARGETS := sdk app
 
-include $(HOME_TREE)/mak_def.inc
+include $(HOME_TREE)/mak_def.mk
 
 all: make_subs
 
-include $(HOME_TREE)/mak_common.inc
+include $(HOME_TREE)/mak_common.mk
 
 clean: make_subs

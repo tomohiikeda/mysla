@@ -21,7 +21,7 @@ HOME_TREE := ../../
 
 MODULE_NAME := $(notdir $(CURDIR))
 
-include $(HOME_TREE)/mak_def.inc
+include $(HOME_TREE)/mak_def.mk
 
 CXXSRC += \
 		main.cpp \
@@ -43,6 +43,6 @@ LD_LIBS += -lstdc++ -lpthread
 
 all: build_app
 
-include $(HOME_TREE)/mak_common.inc
+include $(HOME_TREE)/mak_common.mk
 
 clean: clean_app
