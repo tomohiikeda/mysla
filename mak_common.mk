@@ -52,6 +52,8 @@ OBJ += $(patsubst %.c, $(TARGET_OBJ_ROOT)/%.o, $(_CSRC))
 OBJ += $(patsubst %.cpp, $(TARGET_OBJ_ROOT)/%.o, $(_CXXSRC))
 OBJ += $(patsubst %.S, $(TARGET_OBJ_ROOT)/%.o, $(_ASRC))
 
+DEPS := $(OBJ:%.o=%.d)
+
 build_sdk:  $(SDK_TARGET)
 
 clean_sdk:
@@ -73,13 +75,13 @@ $(APP_TARGET): $(OBJ) $(EXTRA_OBJ) $(SDK_TARGET)
 	@echo " LD   $@"
 	$(CMD_HIDE)$(CC) $(ALL_CXXFLAGS) -o $@ $^ $(LDFLAGS)  
 
-
+-include $(DEPS)
 #
 # Compile: create object files from C++ source files.
 $(TARGET_OBJ_ROOT)/%.o: %.cpp
 	@$(MKDIR) `dirname $@`
 	@echo " CXX  $<"
-	$(CMD_HIDE)$(CXX) -c $(ALL_CXXFLAGS) $< -o $@ 
+	$(CMD_HIDE)$(CXX) -c $(ALL_CXXFLAGS) -MMD $< -o $@ 
 
 # Compile: create object files from C source files.
 $(TARGET_OBJ_ROOT)/%.o: %.c
