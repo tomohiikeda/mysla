@@ -33,8 +33,11 @@ int slam_main(int argc, const char *argv[])
     PulseCounter pulse_sensor;
     GnuplotPlotter plotter;
     Slam slam(&lidar, &pulse_sensor, &plotter);
+    
     Motor motor;
     RemoteControl remocon(motor);
+
+    
 
     if (slam.init() == false)
         return EXIT_FAILURE;
@@ -120,6 +123,8 @@ int scan_matching_main(int argc, const char *argv[])
     plotter->close();
     delete plotter;
     delete scan_matcher;
+
+    return EXIT_SUCCESS;
 }
 
 /**

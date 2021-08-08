@@ -13,6 +13,7 @@ class Motor : public IMotor{
 
     protected:
         FILE *fd[2];
+        void write_(int16_t freq_l, int16_t freq_r);
 
     private:
 };

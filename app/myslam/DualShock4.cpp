@@ -58,7 +58,12 @@ void DualShock4::process_loop(void)
     
     while (true) {
         struct js_event event;
-        if (read(fd, &event, sizeof(struct js_event)) >= sizeof(struct js_event)) {
+        ssize_t sz_rd = read(fd, &event, sizeof(struct js_event));
+        
+        if (sz_rd < 0)
+            printf("failed to read\n");
+        
+        if ((size_t)sz_rd >= sizeof(struct js_event)) {
             switch (event.type & ~JS_EVENT_INIT) {
             case JS_EVENT_BUTTON:
                 switch (event.number) {

@@ -127,7 +127,7 @@ bool PointCloud::calculate_normal(Vector2D& normal, int idx, const Point& pt, in
     const double FPDMIN = 0.06;
     const double FPDMAX = 100.0;
 
-    for (int i=idx; 0<=i && i<this->points.size(); i+=dir) {
+    for (size_t i=idx; 0<=i && i<this->points.size(); i+=dir) {
         const Point& lp = this->points.at(i);
         double dx = lp.x - pt.x;
         double dy = lp.y - pt.y;
@@ -147,7 +147,6 @@ void PointCloud::debug_print(void)
 {
     for (size_t i=0; i<points.size()-1; i++) {
         Point& pt = points.at(i);
-        Point& pt_next = points.at(i+1);
         printf("[%d]x=%f, y=%f, normal={%f,%f}, type=%d\n", i, pt.x, pt.y, pt.normal.x, pt.normal.y, pt.type);
     }
 }

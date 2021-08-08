@@ -6,7 +6,6 @@
 
 bool PulseCounter::init(void)
 {
-
     this->fd_r = open("/dev/rtcounter_r1", O_RDONLY);
     if (!this->fd_r) {
         printf("failed to open /dev/rtcounter_r0\n");
@@ -27,13 +26,11 @@ bool PulseCounter::start(void)
 
 void PulseCounter::stop(void)
 {
-
     if (this->fd_r)
         close(fd_r);
     
     if (this->fd_l)
         close(fd_l);
-
 }
 
 bool PulseCounter::get_odometory(double *od_r, double *od_l)

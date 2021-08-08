@@ -77,7 +77,8 @@ void Slam::process_loop(void)
 
         double od_r, od_l;
         odometer->get_odometory(&od_r, &od_l);
-
+        //printf("odo:l=%f, r=%f\n", od_l, od_r);
+        /*
         if (sensor->get_point_cloud(&cur_pc) == false) {
             running = false;
             return;
@@ -86,7 +87,7 @@ void Slam::process_loop(void)
         Pose2D movement = this->scan_matcher->do_scan_matching();
         cur_pc.move(movement);
         this->plotter->plot(&cur_pc, &pre_pc);
-        
+        */
         //cur_pc.copy_to(pre_pc);
         //this->scan_matcher->set_reference_scan(&pre_pc);
         

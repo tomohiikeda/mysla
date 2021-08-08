@@ -9,12 +9,13 @@ class ScanMatcher {
         ScanMatcher(bool debug=false){
             this->debug = debug;
         };
+        virtual ~ScanMatcher(void){};
         void set_current_scan(const PointCloud *pc);
         void set_reference_scan(const PointCloud *pc);
         Pose2D do_scan_matching(void) const;
         void set_debug_plotter(const IPlotter *plotter);
     
-    private:
+    protected:
         enum cost_type {
             COST_SIMPLE,
             COST_VERTICAL,

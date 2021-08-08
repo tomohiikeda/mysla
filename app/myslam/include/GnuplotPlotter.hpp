@@ -5,6 +5,8 @@
 
 class GnuplotPlotter: public IPlotter{
     public:
+        GnuplotPlotter(void){};
+        virtual ~GnuplotPlotter(void){};
         bool open(void);
         void close(void);
         void plot(const PointCloud* pc) const;

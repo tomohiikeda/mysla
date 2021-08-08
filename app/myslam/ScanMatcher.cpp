@@ -37,7 +37,7 @@ uint32_t ScanMatcher::is_matching_done(
 
     // 過去N回分の評価値の移動平均が小さい
     double ave_ev = 0;
-    for (int i=0; i<history_num; i++) {
+    for (uint32_t i=0; i<history_num; i++) {
         if (ev_history[i] != 0) {
             ave_ev += ev_history[i];
         }
@@ -156,7 +156,6 @@ Pose2D ScanMatcher::steepest_descent(const PointCloud *scan,
     PointCloud temp_scan = *scan;
     double ev = this->cost_function(&temp_scan, ref_scan, associate_list, cost_type);
     double pre_ev = 0;
-    double min_ev = ev;
     double total_dtheta = 0;
     double total_dx = 0;
     double total_dy = 0;
@@ -260,7 +259,6 @@ double ScanMatcher::simple_distance(const PointCloud *cur_scan,
                                     const std::vector<uint32_t>& associate_list) const
 {
     double dist_sum = 0;
-    uint32_t nn = 0;
     for (size_t i = 0; i < associate_list.size(); i++) {
         Point cur_point = cur_scan->at(i);
         Point ref_point = ref_scan->at(associate_list.at(i));

@@ -50,12 +50,14 @@ void GnuplotPlotter::plot(const PointCloud *pc_0, const PointCloud *pc_1) const
     this->input_points(pc_1, plotfile_1);
     this->input_normal(pc_1, normalfile_0);
 
-    //fprintf(fd, "plot \
-    //            \"$%s\" with points pointtype 7 pointsize 0.2, \
-    //            \"$%s\" with points pointtype 7 pointsize 0.2, \
-    //            \"$%s\" with linespoints pointtype 0 \
-    //            \n",
-    //        plotfile_0, plotfile_1, normalfile_0);
+    /*
+    fprintf(fd, "plot \
+                \"$%s\" with points pointtype 7 pointsize 0.2, \
+                \"$%s\" with points pointtype 7 pointsize 0.2, \
+                \"$%s\" with linespoints pointtype 0 \
+                \n",
+            plotfile_0, plotfile_1, normalfile_0);
+    */
     fprintf(fd, "plot \
                 \"$%s\" with points pointtype 7 pointsize 0.2, \
                 \"$%s\" with points pointtype 7 pointsize 0.2, \

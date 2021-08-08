@@ -46,15 +46,7 @@ void Motor::move_front(int16_t freq)
     if (this->fd[0] == nullptr || this->fd[1] == nullptr)
         return;
 
-    char wbuf_l[10];
-    char wbuf_r[10];
-
-    sprintf(wbuf_l, "%d\n", freq);
-    sprintf(wbuf_r, "%d\n", freq);
-    size_t wrote_sz_l = fwrite(wbuf_l, strlen(wbuf_l), 1, this->fd[1]);
-    size_t wrote_sz_r = fwrite(wbuf_r, strlen(wbuf_r), 1, this->fd[0]);
-    fflush(this->fd[0]);
-    fflush(this->fd[1]);
+    this->write_(freq, freq);
 }
 
 void Motor::turn_left(double rad, double speed)
@@ -66,12 +58,25 @@ void Motor::turn_left(int16_t freq)
     if (this->fd[0] == nullptr || this->fd[1] == nullptr)
         return;
 
+    this->write_(-freq, freq);
+}
+
+void Motor::write_(int16_t freq_l, int16_t freq_r)
+{
     char wbuf_l[10];
     char wbuf_r[10];
-    sprintf(wbuf_l, "%d\n", -freq);
-    sprintf(wbuf_r, "%d\n", freq);
+
+    sprintf(wbuf_l, "%d\n", freq_l);
+    sprintf(wbuf_r, "%d\n", freq_r);
     size_t wrote_sz_l = fwrite(wbuf_l, strlen(wbuf_l), 1, this->fd[1]);
     size_t wrote_sz_r = fwrite(wbuf_r, strlen(wbuf_r), 1, this->fd[0]);
+    
+    if (!wrote_sz_l || !wrote_sz_r) {
+        printf("failed to write to motor\n");
+        this->deinit();
+        return;
+    }
+    
     fflush(this->fd[1]);
     fflush(this->fd[0]);
 }
