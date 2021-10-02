@@ -3,18 +3,26 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <errno.h>
+#include <stdio.h>
+#include <string>
 
 bool PulseCounter::init(void)
 {
-    this->fd_r = open("/dev/rtcounter_r1", O_RDONLY);
-    if (!this->fd_r) {
-        printf("failed to open /dev/rtcounter_r0\n");
+    this->fd[0] = open("/dev/rtcounter_l1", O_RDWR);
+    if (!this->fd[0]) {
+        printf("failed to open /dev/rtcounter_l1\n");
+        goto err_0;
+    }
+
+    this->fd[1] = open("/dev/rtcounter_r1", O_RDWR);
+    if (!this->fd[1]) {
+        printf("failed to open /dev/rtcounter_r1\n");
         goto err_0;
     }
     return true;
 
 err_1:
-    close(this->fd_r);
+    close(this->fd[0]);
 err_0:
     return false;
 }
@@ -26,24 +34,30 @@ bool PulseCounter::start(void)
 
 void PulseCounter::stop(void)
 {
-    if (this->fd_r)
-        close(fd_r);
-    
-    if (this->fd_l)
-        close(fd_l);
+    for (int i=0; i<2; i++) {
+        if (this->fd[i]) {
+            close(this->fd[i]);
+            this->fd[i] = 0;
+        }
+    }
 }
 
 bool PulseCounter::get_odometory(double *od_r, double *od_l)
 {
 
-//    if (!fd_r || !fd_l)
-//        return;
+    if (!fd[0] || !fd[1])
+        return false;
 
-    char buf[10] = {0};
-    off_t ofs = lseek(this->fd_r, 0, SEEK_SET);
-    ssize_t rsize = read(this->fd_r, buf, sizeof(buf));
-    //printf("ofs=%d, errno=%d, rsize=%d\n", ofs, errno, rsize);
-    //printf("%s\n", buf);
+    char buf_l[10] = {0};
+    char buf_r[10] = {0};
+    ssize_t wsize_l = write(this->fd[0], buf_l, sizeof(buf_l));
+    ssize_t wsize_r = write(this->fd[1], buf_r, sizeof(buf_r));
+    fsync(this->fd[0]);
+    fsync(this->fd[1]);
+    ssize_t rsize_l = read(this->fd[0], buf_l, sizeof(buf_l));
+    ssize_t rsize_r = read(this->fd[1], buf_r, sizeof(buf_r));
+    *od_l = atoi(buf_l);
+    *od_r = atoi(buf_r);
     return true;
 
 }    

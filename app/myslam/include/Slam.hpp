@@ -11,7 +11,7 @@
 
 class Slam{
     public:
-        Slam(ISensor *sensor, IOdometer *odometer, IPlotter *plotter):
+        Slam(ISensor *sensor, IOdometer& odometer, IPlotter *plotter):
             sensor(sensor),
             odometer(odometer),
             plotter(plotter){
@@ -24,7 +24,7 @@ class Slam{
 
     protected:
         ISensor *sensor;
-        IOdometer *odometer;
+        IOdometer& odometer;
         IPlotter *plotter;
         ScanMatcher *scan_matcher;
         bool running;

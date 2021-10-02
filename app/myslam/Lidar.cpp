@@ -39,6 +39,8 @@ bool Lidar::init(void)
     if(check_health() == false)
         goto error;
 
+    this->valid = true;
+    
     return true;
 
 error:

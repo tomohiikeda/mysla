@@ -14,6 +14,9 @@ class RemoteControl : public DualShock4 {
 
     protected:
         Motor& motor;
+        void set_motor_freq(int16_t left, int16_t right);
+        int16_t current_l3_ud = 0;
+        int16_t current_r3_lr = 0;
 
     private:
 };

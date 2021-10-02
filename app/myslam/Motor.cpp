@@ -10,7 +10,7 @@ bool Motor::init(void)
     }
 
     this->fd[1] = fopen("/dev/rtmotor_raw_l0", "w");
-    if (!this->fd[0]) {
+    if (!this->fd[1]) {
         printf("failed to open /dev/rtmotor_raw_r0\n");
         goto err_0;
     }
@@ -59,6 +59,11 @@ void Motor::turn_left(int16_t freq)
         return;
 
     this->write_(-freq, freq);
+}
+
+void Motor::set_freq(int16_t freq_l, int16_t freq_r)
+{
+    this->write_(freq_l, freq_r);
 }
 
 void Motor::write_(int16_t freq_l, int16_t freq_r)

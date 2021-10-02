@@ -32,7 +32,7 @@ int slam_main(int argc, const char *argv[])
     Lidar lidar;
     PulseCounter pulse_sensor;
     GnuplotPlotter plotter;
-    Slam slam(&lidar, &pulse_sensor, &plotter);
+    Slam slam(&lidar, pulse_sensor, &plotter);
     
     Motor motor;
     RemoteControl remocon(motor);

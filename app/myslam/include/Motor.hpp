@@ -10,6 +10,7 @@ class Motor : public IMotor{
         void move_front(int16_t freq);
         void turn_left(double rad, double speed);
         void turn_left(int16_t freq);
+        void set_freq(int16_t freq_l, int16_t freq_r);
 
     protected:
         FILE *fd[2];

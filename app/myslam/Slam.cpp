@@ -11,7 +11,7 @@ bool Slam::init(void)
     if(sensor->init() == false)
         return false;
 
-    if(odometer->init() == false)
+    if(odometer.init() == false)
         return false;
 
     return true;
@@ -26,7 +26,7 @@ bool Slam::start(void)
     if(sensor->start() == false)
         return false;
 
-    if(odometer->start() == false)
+    if(odometer.start() == false)
         return false;
 
     if(plotter->open() == false)
@@ -49,7 +49,7 @@ void Slam::stop(void)
     running = false;
     pthread_join(slam_thread, NULL);
     sensor->stop();
-    odometer->stop();
+    odometer.stop();
     plotter->close();
 }
 
@@ -76,8 +76,8 @@ void Slam::process_loop(void)
     while (running == true) {
 
         double od_r, od_l;
-        odometer->get_odometory(&od_r, &od_l);
-        //printf("odo:l=%f, r=%f\n", od_l, od_r);
+        odometer.get_odometory(&od_r, &od_l);
+        printf("odo: %f  %f\n", od_l, od_r);
         /*
         if (sensor->get_point_cloud(&cur_pc) == false) {
             running = false;

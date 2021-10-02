@@ -11,8 +11,7 @@ class PulseCounter : public IOdometer{
         bool get_odometory(double *od_r, double *od_l);
 
     protected:
-        int fd_r;
-        int fd_l;
+        int fd[2];
 
     private:
 };

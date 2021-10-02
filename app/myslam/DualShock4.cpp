@@ -56,7 +56,7 @@ void DualShock4::process_loop(void)
 {
     this->running = true;
     
-    while (true) {
+    while (this->running) {
         struct js_event event;
         ssize_t sz_rd = read(fd, &event, sizeof(struct js_event));
         

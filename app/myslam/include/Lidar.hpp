@@ -16,6 +16,7 @@ class Lidar : public ISensor{
         bool get_point_cloud(PointCloud *point_cloud);
 
     protected:
+        bool valid = false;
         RPlidarDriver *_drv;
         bool check_health(void);
         bool get_devinfo(void);
