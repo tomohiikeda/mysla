@@ -17,7 +17,7 @@ bool PulseCounter::init(void)
     this->fd[1] = open("/dev/rtcounter_r1", O_RDWR);
     if (!this->fd[1]) {
         printf("failed to open /dev/rtcounter_r1\n");
-        goto err_0;
+        goto err_1;
     }
     return true;
 
@@ -42,22 +42,24 @@ void PulseCounter::stop(void)
     }
 }
 
-bool PulseCounter::get_odometory(double *od_r, double *od_l)
+bool PulseCounter::get_odometory(int16_t *od_l, int16_t *od_r)
 {
-
     if (!fd[0] || !fd[1])
         return false;
 
     char buf_l[10] = {0};
     char buf_r[10] = {0};
-    ssize_t wsize_l = write(this->fd[0], buf_l, sizeof(buf_l));
-    ssize_t wsize_r = write(this->fd[1], buf_r, sizeof(buf_r));
-    fsync(this->fd[0]);
-    fsync(this->fd[1]);
     ssize_t rsize_l = read(this->fd[0], buf_l, sizeof(buf_l));
     ssize_t rsize_r = read(this->fd[1], buf_r, sizeof(buf_r));
     *od_l = atoi(buf_l);
     *od_r = atoi(buf_r);
+
+    char cl[10] = {0};
+    ssize_t wsize_l = write(this->fd[0], cl, sizeof(cl));
+    ssize_t wsize_r = write(this->fd[1], cl, sizeof(cl));
+    fsync(this->fd[0]);
+    fsync(this->fd[1]);
+
     return true;
 
 }    

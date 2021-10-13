@@ -2,6 +2,7 @@
 #include <iostream>
 #include <unistd.h>
 #include "Slam.hpp"
+#include "PoseEstimator.hpp"
 
 /**
  * @brief SLAM初期化
@@ -61,9 +62,10 @@ void Slam::process_loop(void)
 {
     PointCloud pre_pc;
     PointCloud cur_pc;
-    
-    running = true;
+    const double control_period = 0.1f;
+    PoseEstimator pose_estimator(control_period);
 
+    running = true;
 
     if (sensor->get_point_cloud(&pre_pc) == false)
         return;
@@ -75,9 +77,10 @@ void Slam::process_loop(void)
     // ずっとループ
     while (running == true) {
 
-        double od_r, od_l;
-        odometer.get_odometory(&od_r, &od_l);
-        printf("odo: %f  %f\n", od_l, od_r);
+        int16_t od_l, od_r;
+        odometer.get_odometory(&od_l, &od_r);
+        Pose2D cur_pose = pose_estimator.get_estimated_position(od_l, od_r);
+        cur_pose.print();
         /*
         if (sensor->get_point_cloud(&cur_pc) == false) {
             running = false;
@@ -96,6 +99,8 @@ void Slam::process_loop(void)
         //estimate_cur_pose(cur_pc);
         //cur_pc.copy_to(pre_pc);
         //plotter->plot(&cur_pc);
+
+        usleep(control_period * 1000 * 1000);
     }
     return;
 }

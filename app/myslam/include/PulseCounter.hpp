@@ -8,7 +8,7 @@ class PulseCounter : public IOdometer{
         bool init(void);
         bool start(void);
         void stop(void);
-        bool get_odometory(double *od_r, double *od_l);
+        bool get_odometory(int16_t *od_l, int16_t *od_r);
 
     protected:
         int fd[2];

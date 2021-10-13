@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 
-class Pose2D{
+class Pose2D {
     public:
         Pose2D(void){ Pose2D(0, 0, 0); }
         Pose2D(double x, double y, double dir){
@@ -9,12 +9,14 @@ class Pose2D{
             this->y = y;
             this->direction = dir;
         }
+        
         double x;
         double y;
         double direction;
 
         void print(void) {
-            std::cout << x << ", " << y << ", " << direction << std::endl;
+            //std::cout << x << ", " << y << ", " << direction << std::endl;
+            printf("%lf, %lf, %lf\n", x, y, direction);
         }
         void move_to(const Pose2D& move){
             direction += move.direction;

@@ -1,4 +1,5 @@
 #include "Motor.hpp"
+#include "WheelConst.hpp"
 #include <string.h>
 
 bool Motor::init(void)
@@ -39,6 +40,16 @@ void Motor::move_front(double mm, double speed)
 
     //uint32_t freq = speed_to_freq(mm, speed);
     //move_front(freq);
+}
+
+void Motor::move_front(double speed)
+{
+    if (this->fd[0] == nullptr || this->fd[1] == nullptr)
+        return;
+
+    int16_t freq = speed_to_freq(speed);
+    printf("freq=%d\n", freq);
+    this->write_(freq, freq);
 }
 
 void Motor::move_front(int16_t freq)
@@ -84,4 +95,9 @@ void Motor::write_(int16_t freq_l, int16_t freq_r)
     
     fflush(this->fd[1]);
     fflush(this->fd[0]);
+}
+
+int16_t Motor::speed_to_freq(double speed)
+{
+    return (PULSE_COUNT_PER_CYCLE * speed) / (2 * M_PI * WHEEL_RADIUS);
 }
