@@ -99,11 +99,11 @@ int scan_matching_main(int argc, const char *argv[])
 {
     printf("run matching mode\n");
 
-    GnuplotPlotter *plotter = new GnuplotPlotter();
+    GnuplotPlotter plotter;
     PointCloud cur_scan;
     PointCloud ref_scan;
-    ScanMatcher *scan_matcher = new ScanMatcher(true);
-    plotter->open();
+    ScanMatcher scan_matcher(true);
+    plotter.open();
 
     ref_scan.load_from_file("ref_scan.dat");
     cur_scan.load_from_file("cur_scan.dat");
@@ -111,19 +111,15 @@ int scan_matching_main(int argc, const char *argv[])
     ref_scan.analyse_points();
     ref_scan.debug_print();
 
-    scan_matcher->set_debug_plotter(plotter);
-    scan_matcher->set_reference_scan(&ref_scan);
-    scan_matcher->set_current_scan(&cur_scan);
-
-    scan_matcher->do_scan_matching();
-
+    scan_matcher.set_debug_plotter(&plotter);
+    scan_matcher.set_reference_scan(&ref_scan);
+    scan_matcher.set_current_scan(&cur_scan);
+    scan_matcher.do_scan_matching();
     while (ctrl_c_pressed == false) {
         sleep(1);
     }
 
-    plotter->close();
-    delete plotter;
-    delete scan_matcher;
+    plotter.close();
 
     return EXIT_SUCCESS;
 }
