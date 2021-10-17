@@ -9,7 +9,7 @@
  */
 bool Slam::init(void)
 {
-    if(sensor->init() == false)
+    if(sensor.init() == false)
         return false;
 
     if(odometer.init() == false)
@@ -24,13 +24,13 @@ bool Slam::init(void)
  */
 bool Slam::start(void)
 {
-    if(sensor->start() == false)
+    if(sensor.start() == false)
         return false;
 
     if(odometer.start() == false)
         return false;
 
-    if(plotter->open() == false)
+    if(plotter.open() == false)
         return false;
 
     int err = pthread_create(&slam_thread, NULL, Slam::thread_entry, this);
@@ -49,9 +49,9 @@ void Slam::stop(void)
 {
     running = false;
     pthread_join(slam_thread, NULL);
-    sensor->stop();
+    sensor.stop();
     odometer.stop();
-    plotter->close();
+    plotter.close();
 }
 
 
@@ -60,51 +60,35 @@ void Slam::stop(void)
  */
 void Slam::process_loop(void)
 {
-    PointCloud pre_pc;
     PointCloud cur_pc;
     const double control_period = 0.1f;
-    PoseEstimator pose_estimator(control_period);
-    uint32_t cnt = 0;
+    ScanMatcher scan_matcher;
+    PoseEstimator pose_estimator(control_period, scan_matcher);
 
     running = true;
-
-    if (sensor->get_point_cloud(&pre_pc) == false)
-        return;
-
-    pre_pc.copy_to(world_map);  // 初回
-    this->scan_matcher->set_reference_scan(&pre_pc);
-    pre_pc.analyse_points();
 
     // ずっとループ
     while (running == true) {
 
-        cnt++;
-
+        // Odometryを取得
         int16_t od_l, od_r;
-        odometer.get_odometory(&od_l, &od_r);
-        Pose2D cur_pose = pose_estimator.get_estimated_position(od_l, od_r);
-        //cur_pose.print();
-
-        //plotter->plot_pose(cur_pose);
-        
-        if (sensor->get_point_cloud(&cur_pc) == false) {
+        if (odometer.get_odometory(&od_l, &od_r) == false) {
             running = false;
             return;
         }
-        /*
-        this->scan_matcher->set_current_scan(&cur_pc);
-        Pose2D movement = this->scan_matcher->do_scan_matching();
-        cur_pc.move(movement);
-        this->plotter->plot(&cur_pc, &pre_pc);
-        */
-        //cur_pc.copy_to(pre_pc);
-        //this->scan_matcher->set_reference_scan(&pre_pc);
         
+        // 現在のScanを取得
+        if (sensor.get_point_cloud(&cur_pc) == false) {
+            running = false;
+            return;
+        }
+
+        // 現在位置の推定
+        Pose2D cur_pose = pose_estimator.get_estimated_position(od_l, od_r, &cur_pc);
         
-        //update_world_map(cur_pc);
-        //estimate_cur_pose(cur_pc);
-        //cur_pc.copy_to(pre_pc);
-        plotter->plot(cur_pose, &cur_pc);
+        // 推定位置を表示
+        cur_pose.print();
+        plotter.plot(cur_pose, &cur_pc);
 
         usleep(control_period * 1000 * 1000);
     }
