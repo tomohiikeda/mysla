@@ -70,7 +70,7 @@ int slam_main(int argc, const char *argv[])
 int save_main(int argc, const char *argv[])
 {
     printf("run save mode\n");
-
+    return EXIT_SUCCESS;
     Lidar lidar;
     if(lidar.init() == false)
         return false;
@@ -98,6 +98,7 @@ exit:
 int scan_matching_main(int argc, const char *argv[])
 {
     printf("run matching mode\n");
+    return EXIT_SUCCESS;
     GnuplotPlotter *plotter = new GnuplotPlotter();
     PointCloud cur_scan;
     PointCloud ref_scan;
@@ -127,6 +128,17 @@ int scan_matching_main(int argc, const char *argv[])
     return EXIT_SUCCESS;
 }
 
+struct argstr_func {
+    const char *string;
+    int (*func)(int argc, const char *argv[]);
+};
+
+static const struct argstr_func main_func_table[] = {
+    { "save",       save_main },
+    { "matching",   scan_matching_main },
+};
+static const int table_size = sizeof(main_func_table) / sizeof(argstr_func);
+
 /**
  * @brief メイン関数
  */
@@ -135,7 +147,19 @@ int main(int argc, const char *argv[])
     if (argc > 2) {
         printf ("Argument is too much.");
         return EXIT_FAILURE;
-    } else if (argc == 2) {
+    }
+
+    if (argc == 1) {
+        return slam_main(argc, argv);
+    }
+
+    if (argc == 2) {
+        for (int i=0; i<table_size; i++){
+            if (!strcmp(argv[1], main_func_table[i].string)) {
+                return main_func_table[i].func(argc, argv);
+            }
+        }
+        /*
         if (!strcmp(argv[1], "save")) {
             return save_main(argc, argv);
         } else if (!strcmp(argv[1], "matching")) {
@@ -144,7 +168,10 @@ int main(int argc, const char *argv[])
             printf("Invalid Argument \"%s\"\n", argv[1]);
             return EXIT_FAILURE;
         }
-    } else {
-        return slam_main(argc, argv);
+        */
+
     }
+
+    printf("Invalid Argument \"%s\"\n", argv[1]);
+    return EXIT_FAILURE;
 }
