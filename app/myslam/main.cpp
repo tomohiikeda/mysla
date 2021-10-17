@@ -70,7 +70,7 @@ int slam_main(int argc, const char *argv[])
 int save_main(int argc, const char *argv[])
 {
     printf("run save mode\n");
-    return EXIT_SUCCESS;
+
     Lidar lidar;
     if(lidar.init() == false)
         return false;
@@ -98,7 +98,7 @@ exit:
 int scan_matching_main(int argc, const char *argv[])
 {
     printf("run matching mode\n");
-    return EXIT_SUCCESS;
+
     GnuplotPlotter *plotter = new GnuplotPlotter();
     PointCloud cur_scan;
     PointCloud ref_scan;
@@ -159,17 +159,6 @@ int main(int argc, const char *argv[])
                 return main_func_table[i].func(argc, argv);
             }
         }
-        /*
-        if (!strcmp(argv[1], "save")) {
-            return save_main(argc, argv);
-        } else if (!strcmp(argv[1], "matching")) {
-            return scan_matching_main(argc, argv);
-        } else {
-            printf("Invalid Argument \"%s\"\n", argv[1]);
-            return EXIT_FAILURE;
-        }
-        */
-
     }
 
     printf("Invalid Argument \"%s\"\n", argv[1]);
