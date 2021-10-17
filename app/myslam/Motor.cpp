@@ -1,5 +1,5 @@
 #include "Motor.hpp"
-#include "WheelConst.hpp"
+#include "RobotConst.hpp"
 #include <string.h>
 
 bool Motor::init(void)

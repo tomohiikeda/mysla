@@ -2,11 +2,14 @@
 
 #include "Common.hpp"
 #include "PointCloud.hpp"
+#include "Pose2D.hpp"
 
 class IPlotter{
     public:
         virtual bool open(void) = 0;
         virtual void close(void) = 0;
+        virtual void plot(const Pose2D pose) const = 0;
+        virtual void plot(const Pose2D pose, const PointCloud* pc) const = 0;
         virtual void plot(const PointCloud *pc) const = 0;
         virtual void plot(const PointCloud* pc0, const PointCloud* pc1) const = 0;
         virtual void plot(const PointCloud *pc_0,

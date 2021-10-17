@@ -11,6 +11,8 @@ bool GnuplotPlotter::open(void)
 
     fprintf(fd, "set xr[-3000:3000]\n");
     fprintf(fd, "set yr[-3000:3000]\n");
+    //fprintf(fd, "set xr[-1:1]\n");
+    //fprintf(fd, "set yr[-1:1]\n");
     fprintf(fd, "set size square\n");
     fflush(fd);
     return true;
@@ -24,6 +26,28 @@ void GnuplotPlotter::close(void)
     pclose(fd);
     fd = NULL;
     return;
+}
+
+void GnuplotPlotter::plot(const Pose2D pose) const
+{
+    if (fd == NULL)
+        return;
+    
+    fprintf(fd, "$pose << EOD\n");
+    fprintf(fd, "%f %f\n", pose.x, pose.y);
+    fprintf(fd, "EOD\n");
+    fprintf(fd, "plot \"$pose\" with points pointtype 1 pointsize 1\n");
+    fflush(fd);
+}
+
+void GnuplotPlotter::plot(const Pose2D pose, const PointCloud *pc) const
+{
+    if (fd == NULL)
+        return;
+
+    this->input_pose(pose, "pose");
+    this->input_points(pc, "data");
+    fprintf(fd, "plot \"$%s\" with points pointtype 1 pointsize 1,\"$%s\" with points pointtype 7 pointsize 0.2\n", "pose", "data");
 }
 
 void GnuplotPlotter::plot(const PointCloud *pc) const
@@ -86,6 +110,13 @@ void GnuplotPlotter::plot(const PointCloud *pc_0,
                 \"$%s\" with linespoints pointtype 0\n",
             plotfile_0, plotfile_1, plotfile_2);
     return;
+}
+
+void GnuplotPlotter::input_pose(const Pose2D pose, const char *data_var) const
+{
+    fprintf(fd, "$%s << EOD\n", data_var);
+    fprintf(fd, "%f %f\n", pose.x, pose.y);
+    fprintf(fd, "EOD\n");
 }
 
 void GnuplotPlotter::input_points(const PointCloud *pc, const char *data_var) const

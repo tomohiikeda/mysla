@@ -64,6 +64,7 @@ void Slam::process_loop(void)
     PointCloud cur_pc;
     const double control_period = 0.1f;
     PoseEstimator pose_estimator(control_period);
+    uint32_t cnt = 0;
 
     running = true;
 
@@ -77,15 +78,20 @@ void Slam::process_loop(void)
     // ずっとループ
     while (running == true) {
 
+        cnt++;
+
         int16_t od_l, od_r;
         odometer.get_odometory(&od_l, &od_r);
         Pose2D cur_pose = pose_estimator.get_estimated_position(od_l, od_r);
-        cur_pose.print();
-        /*
+        //cur_pose.print();
+
+        //plotter->plot_pose(cur_pose);
+        
         if (sensor->get_point_cloud(&cur_pc) == false) {
             running = false;
             return;
         }
+        /*
         this->scan_matcher->set_current_scan(&cur_pc);
         Pose2D movement = this->scan_matcher->do_scan_matching();
         cur_pc.move(movement);
@@ -98,7 +104,7 @@ void Slam::process_loop(void)
         //update_world_map(cur_pc);
         //estimate_cur_pose(cur_pc);
         //cur_pc.copy_to(pre_pc);
-        //plotter->plot(&cur_pc);
+        plotter->plot(cur_pose, &cur_pc);
 
         usleep(control_period * 1000 * 1000);
     }
