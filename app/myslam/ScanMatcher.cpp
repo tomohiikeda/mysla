@@ -125,6 +125,9 @@ Pose2D ScanMatcher::do_scan_matching(void) const
     //    this->ref_scan->save_to_file("ref_scan.dat");
     //    this->cur_scan->save_to_file("cur_scan.dat");
     //}
+    if (this->debug)
+        printf("Matching Done!\n");
+
     return total_dev;
 }
 
