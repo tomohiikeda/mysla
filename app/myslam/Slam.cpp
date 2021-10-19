@@ -1,6 +1,8 @@
 #include "Common.hpp"
 #include <iostream>
 #include <unistd.h>
+#include <time.h>
+#include <sys/time.h>
 #include "Slam.hpp"
 #include "PoseEstimator.hpp"
 
@@ -64,22 +66,26 @@ void Slam::process_loop(void)
     const double control_period = 0.1f;
     ScanMatcher scan_matcher;
     PoseEstimator pose_estimator(control_period, scan_matcher);
+    struct timeval timeval;
 
-    running = true;
+    this->running = true;
 
     // ずっとループ
-    while (running == true) {
+    while (this->running == true) {
+
+        gettimeofday(&timeval, NULL);
+        //printf("%d\n",timeval.tv_usec);
 
         // Odometryを取得
         int16_t od_l, od_r;
         if (odometer.get_odometory(&od_l, &od_r) == false) {
-            running = false;
+            this->running = false;
             return;
         }
-        
+
         // 現在のScanを取得
         if (sensor.get_point_cloud(&cur_pc) == false) {
-            running = false;
+            this->running = false;
             return;
         }
 
@@ -87,7 +93,7 @@ void Slam::process_loop(void)
         Pose2D cur_pose = pose_estimator.get_estimated_position(od_l, od_r, &cur_pc);
         
         // 推定位置を表示
-        cur_pose.print();
+        //cur_pose.print();
         plotter.plot(cur_pose, &cur_pc);
 
         usleep(control_period * 1000 * 1000);
