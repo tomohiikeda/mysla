@@ -9,7 +9,6 @@ PoseEstimator::PoseEstimator(double control_period, ScanMatcher& scan_matcher):
     this->current_pose.direction = 0.0f;
 
     this->control_period = control_period;
-//    this->scan_matcher = scan_matcher;
 }
 
 Pose2D PoseEstimator::get_estimated_position(const int16_t od_l, const int16_t od_r, const PointCloud *cur_pc)
@@ -43,8 +42,9 @@ Pose2D PoseEstimator::estimate_from_scan(const PointCloud *cur_pc)
         goto out;
     }
 
-    this->scan_matcher.set_current_scan(cur_pc);
+    this->pre_pc.analyse_points();
     this->scan_matcher.set_reference_scan(&this->pre_pc);
+    this->scan_matcher.set_current_scan(cur_pc);
     movement = this->scan_matcher.do_scan_matching();
     
     current_pose.move_to(movement);
