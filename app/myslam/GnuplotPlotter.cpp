@@ -45,9 +45,13 @@ void GnuplotPlotter::plot(const Pose2D pose, const PointCloud *pc) const
     if (fd == NULL)
         return;
 
-    this->input_pose(pose, "pose");
-    this->input_points(pc, "data");
-    fprintf(fd, "plot \"$%s\" with points pointtype 1 pointsize 1,\"$%s\" with points pointtype 7 pointsize 0.2\n", "pose", "data");
+    const char *pose_var = "pose";
+    const char *data_var = "data";
+    this->input_pose(pose, pose_var);
+    this->input_points(pc, data_var);
+    fprintf(fd, "plot \
+                \"$%s\" with lines, \
+                \"$%s\" with points pointtype 7 pointsize 0.2\n", pose_var, data_var);
 }
 
 void GnuplotPlotter::plot(const PointCloud *pc) const
@@ -114,8 +118,16 @@ void GnuplotPlotter::plot(const PointCloud *pc_0,
 
 void GnuplotPlotter::input_pose(const Pose2D pose, const char *data_var) const
 {
+    const double L = 100.0f;
     fprintf(fd, "$%s << EOD\n", data_var);
-    fprintf(fd, "%f %f\n", pose.x, pose.y);
+    fprintf(fd, "%f %f\n", pose.x - L * sin(pose.direction), 
+                           pose.y + L * cos(pose.direction));
+    fprintf(fd, "%f %f\n", pose.x - (L / 3) * cos(pose.direction), 
+                           pose.y - (L / 3) * sin(pose.direction));
+    fprintf(fd, "%f %f\n", pose.x + (L / 3) * cos(pose.direction), 
+                           pose.y + (L / 3) * sin(pose.direction));
+    fprintf(fd, "%f %f\n", pose.x - L * sin(pose.direction), 
+                           pose.y + L * cos(pose.direction));
     fprintf(fd, "EOD\n");
 }
 
