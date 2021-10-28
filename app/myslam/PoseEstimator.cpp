@@ -26,8 +26,8 @@ Pose2D PoseEstimator::estimate_from_odometory(const int16_t od_l, const int16_t 
     double delta_L = (delta_L_r + delta_L_l) / 2;
     double delta_theta = (delta_L_r  - delta_L_l) / WHEEL_BASE;
 
-    current_pose.x += delta_L * cos(current_pose.direction + delta_theta / 2);
-    current_pose.y += delta_L * sin(current_pose.direction + delta_theta / 2);
+    current_pose.x -= delta_L * sin(current_pose.direction + delta_theta / 2);
+    current_pose.y += delta_L * cos(current_pose.direction + delta_theta / 2);
     current_pose.direction += delta_theta;
 
     return current_pose;
