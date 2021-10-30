@@ -1,13 +1,11 @@
 #pragma once
 
-#include <pthread.h> 
-#include <cmath>
 #include "ISensor.hpp"
 #include "IOdometer.hpp"
 #include "IPlotter.hpp"
 #include "Pose2D.hpp"
 #include "PointCloud.hpp"
-
+#include "GlidMap.hpp"
 class Slam{
     public:
         Slam(ISensor& sensor, IOdometer& odometer, IPlotter& plotter):
@@ -28,6 +26,7 @@ class Slam{
         pthread_t slam_thread;
         Pose2D cur_pose;
         PointCloud world_map;
+        GlidMap glid_map;
 
         void update_world_map(const PointCloud *cur_pc);
         void estimate_cur_pose(const PointCloud *cur_pc);

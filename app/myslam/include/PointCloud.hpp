@@ -19,6 +19,7 @@ class PointCloud{
         void clear(void);
         void copy_to(PointCloud& to) const;
         void translate(double x, double y);
+        void thin_out(uint32_t interval);
         void rotate(double radian);
         void move(Pose2D movement);
         void save_to_file(const char *filename) const;

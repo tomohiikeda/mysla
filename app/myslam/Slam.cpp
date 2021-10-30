@@ -91,10 +91,14 @@ void Slam::process_loop(void)
 
         // 現在位置の推定
         Pose2D cur_pose = pose_estimator.get_estimated_position(od_l, od_r, &cur_pc);
-        
+
+        // ワールドマップを更新
+        grow_world_map(&cur_pc);
+
         // 推定位置を表示
         //cur_pose.print();
-        plotter.plot(cur_pose, &cur_pc);
+        //plotter.plot(cur_pose, &this->world_map);
+        plotter.plot(cur_pose, this->glid_map);
 
         usleep(control_period * 1000 * 1000);
     }
@@ -114,6 +118,8 @@ void Slam::update_world_map(const PointCloud *cur_pc)
  */
 void Slam::grow_world_map(const PointCloud *cur_pc)
 {
+    this->world_map.add(cur_pc);
+    this->glid_map.set_points(cur_pc);
     return;
 }
 

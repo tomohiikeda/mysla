@@ -16,6 +16,8 @@ class GnuplotPlotter: public IPlotter{
         void plot(const PointCloud *pc_0,
                   const PointCloud *pc_1,
                   const std::vector<uint32_t>& associate_list) const;
+        void plot(const GlidMap& glid_map) const;
+        void plot(const Pose2D pose, const GlidMap& glid_map) const;
 
     protected:
         FILE *fd;

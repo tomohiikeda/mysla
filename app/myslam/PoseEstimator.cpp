@@ -14,8 +14,8 @@ PoseEstimator::PoseEstimator(double control_period, ScanMatcher& scan_matcher):
 Pose2D PoseEstimator::get_estimated_position(const int16_t od_l, const int16_t od_r, const PointCloud *cur_pc)
 {
     //printf("l=%d, r=%d\n", od_l, od_r);
-    estimate_from_odometory(od_l, od_r);
-    //estimate_from_scan(cur_pc);
+    //estimate_from_odometory(od_l, od_r);
+    estimate_from_scan(cur_pc);
     return current_pose;
 }
 

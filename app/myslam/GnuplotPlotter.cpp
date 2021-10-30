@@ -28,6 +28,10 @@ void GnuplotPlotter::close(void)
     return;
 }
 
+/**
+ * @brief プロット関数。自機をプロットする。
+ * @param pose 自機の現在Pose
+ */
 void GnuplotPlotter::plot(const Pose2D pose) const
 {
     if (fd == NULL)
@@ -113,6 +117,30 @@ void GnuplotPlotter::plot(const PointCloud *pc_0,
                 \"$%s\" with points pointtype 7 pointsize 0.2, \
                 \"$%s\" with linespoints pointtype 0\n",
             plotfile_0, plotfile_1, plotfile_2);
+    return;
+}
+
+void GnuplotPlotter::plot(const GlidMap& glid_map) const
+{
+    if (fd == NULL)
+        return;
+
+    PointCloud pc;
+    glid_map.to_point_cloud(&pc);
+    this->plot(&pc);
+
+    return;
+}
+
+void GnuplotPlotter::plot(const Pose2D pose, const GlidMap& glid_map) const
+{
+    if (fd == NULL)
+        return;
+
+    PointCloud pc;
+    glid_map.to_point_cloud(&pc);
+    this->plot(pose, &pc);
+
     return;
 }
 

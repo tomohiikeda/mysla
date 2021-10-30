@@ -43,6 +43,18 @@ void PointCloud::translate(double x, double y)
     }
 }
 
+void PointCloud::thin_out(uint32_t interval)
+{
+    std::vector<Point> tmp_points;
+    for (size_t i=0; i<points.size()-1; i++) {
+        if ((i % interval) == 0) {
+            tmp_points.push_back(points.at(i));
+        }
+    }
+    this->points.clear();
+    std::copy(tmp_points.begin(), tmp_points.end(), back_inserter(points));
+}
+
 void PointCloud::rotate(double radian)
 {
     for (size_t i=0; i<points.size(); i++) {
@@ -150,3 +162,4 @@ void PointCloud::debug_print(void)
         printf("[%d]x=%f, y=%f, normal={%f,%f}, type=%d\n", i, pt.x, pt.y, pt.normal.x, pt.normal.y, pt.type);
     }
 }
+

@@ -32,19 +32,19 @@ int slam_main(int argc, const char *argv[])
     Lidar lidar;
     PulseCounter pulse_sensor;
     GnuplotPlotter plotter;
-    Slam slam(lidar, pulse_sensor, plotter);
+    Slam *slam = new Slam(lidar, pulse_sensor, plotter);
     
     Motor motor;
     RemoteControl remocon(motor);
 
     
 
-    if (slam.init() == false)
+    if (slam->init() == false)
         return EXIT_FAILURE;
 
     signal(SIGINT, ctrlc);
 
-    if (slam.start() == false) {
+    if (slam->start() == false) {
         printf("failed to start SLAM\n");
         return EXIT_FAILURE;
     }
@@ -60,9 +60,11 @@ int slam_main(int argc, const char *argv[])
     while (ctrl_c_pressed == false)
         sleep(1);
 
-    slam.stop();
+    slam->stop();
     remocon.deinit();
     motor.deinit();
+
+    delete slam;
 
     return EXIT_SUCCESS;
 }
