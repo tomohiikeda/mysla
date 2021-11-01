@@ -6,21 +6,19 @@
 
 class ScanMatcher {
     public:
-        ScanMatcher(bool debug=false){
-            this->debug = debug;
+        ScanMatcher(IPlotter *debug_plotter=nullptr){
+            this->debug_plotter = debug_plotter;
         };
         virtual ~ScanMatcher(void){};
         void set_current_scan(const PointCloud *pc);
         void set_reference_scan(const PointCloud *pc);
         Pose2D do_scan_matching(void) const;
-        void set_debug_plotter(const IPlotter *plotter);
     
     protected:
         enum cost_type {
             COST_SIMPLE,
             COST_VERTICAL,
         };
-        bool debug = false;
         const IPlotter *debug_plotter;
         const PointCloud *cur_scan;
         const PointCloud *ref_scan;
@@ -61,5 +59,6 @@ class ScanMatcher {
         void plot_for_debug(const PointCloud *cur_scan,
                             const PointCloud *ref_scan,
                             const std::vector<uint32_t>& associate_list) const;
+        bool is_debug_mode(void) const { return debug_plotter ? true: false; }
 
 };

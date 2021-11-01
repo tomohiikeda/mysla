@@ -2,11 +2,6 @@
 #include "Util.hpp"
 #include <unistd.h>
 
-void ScanMatcher::set_debug_plotter(const IPlotter *plotter)
-{
-    this->debug_plotter = plotter;
-}
-
 void ScanMatcher::set_current_scan(const PointCloud *pc)
 {
     this->cur_scan = pc;
@@ -46,7 +41,7 @@ uint32_t ScanMatcher::is_matching_done(
     ave_ev /= history_num;
     
     if (ev < 3000 && std::abs(ave_ev) < 100) {
-        printf("ave_ev=%f\n", ave_ev);
+        //printf("ave_ev=%f\n", ave_ev);
         return 2;
     }
         
@@ -68,10 +63,9 @@ Pose2D ScanMatcher::do_scan_matching(void) const
     uint32_t history_num = sizeof(ev_history) / sizeof(double);
     Pose2D dev;
     Pose2D total_dev(0,0,0);
-    
 
-    if (this->debug) {
-        this->debug_plotter->plot(this->cur_scan, this->ref_scan);
+    if (this->is_debug_mode()) {
+        this->debug_plotter->plot(this->ref_scan, this->cur_scan);
         sleep(3);
     }
 
@@ -100,7 +94,7 @@ Pose2D ScanMatcher::do_scan_matching(void) const
         ev_history[0] = (ev - pre_ev);
 
         // 移動後の表示
-        if (this->debug) {
+        if (this->is_debug_mode()) {
             plot_for_debug(&temp_scan, this->ref_scan, associate_list);
             printf("[%d]dx=%f, dy=%f, dtheta=%f, cost_type=%d, ev=%f\n", iter, dev.x, dev.y, dev.direction, cost_type, ev);
             sleep(1);
@@ -125,7 +119,7 @@ Pose2D ScanMatcher::do_scan_matching(void) const
     //    this->ref_scan->save_to_file("ref_scan.dat");
     //    this->cur_scan->save_to_file("cur_scan.dat");
     //}
-    if (this->debug)
+    if (this->is_debug_mode())
         printf("Matching Done! dx=%f, dy=%f, dtheta=%f\n", total_dev.x, total_dev.y, total_dev.direction);
 
     return total_dev;

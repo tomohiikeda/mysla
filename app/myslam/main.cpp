@@ -54,14 +54,14 @@ int slam_main(int argc, const char *argv[])
         return EXIT_FAILURE;
     }
 
-    if (remocon.init() == false)
-        return EXIT_FAILURE;
+    //if (remocon.init() == false)
+    //    return EXIT_FAILURE;
 
     while (ctrl_c_pressed == false)
         sleep(1);
 
     slam->stop();
-    remocon.deinit();
+    //remocon.deinit();
     motor.deinit();
 
     delete slam;
@@ -104,16 +104,14 @@ int scan_matching_main(int argc, const char *argv[])
     GnuplotPlotter plotter;
     PointCloud cur_scan;
     PointCloud ref_scan;
-    ScanMatcher scan_matcher(true);
+    ScanMatcher scan_matcher(&plotter);
     plotter.open();
 
     ref_scan.load_from_file("ref_scan.dat");
     cur_scan.load_from_file("cur_scan.dat");
     
-    ref_scan.analyse_points();
     ref_scan.debug_print();
 
-    scan_matcher.set_debug_plotter(&plotter);
     scan_matcher.set_reference_scan(&ref_scan);
     scan_matcher.set_current_scan(&cur_scan);
     scan_matcher.do_scan_matching();

@@ -11,11 +11,10 @@ PoseEstimator::PoseEstimator(double control_period, ScanMatcher& scan_matcher):
     this->control_period = control_period;
 }
 
-Pose2D PoseEstimator::get_estimated_position(const int16_t od_l, const int16_t od_r, const PointCloud *cur_pc)
+Pose2D PoseEstimator::estimate_position(const int16_t od_l, const int16_t od_r, const PointCloud *cur_pc, const GlidMap& glid_map)
 {
-    //printf("l=%d, r=%d\n", od_l, od_r);
     //estimate_from_odometory(od_l, od_r);
-    estimate_from_scan(cur_pc);
+    estimate_from_scan(cur_pc, glid_map);
     return current_pose;
 }
 
@@ -33,21 +32,25 @@ Pose2D PoseEstimator::estimate_from_odometory(const int16_t od_l, const int16_t 
     return current_pose;
 }
 
-Pose2D PoseEstimator::estimate_from_scan(const PointCloud *cur_pc)
+Pose2D PoseEstimator::estimate_from_scan(const PointCloud *cur_pc, const GlidMap& glid_map)
 {
     Pose2D movement;
+    PointCloud world_pc;
 
     // 初回は前回スキャンが無いので計算を無視
     if (this->pre_pc.size() == 0) {
         goto out;
     }
 
-    this->pre_pc.analyse_points();
-    this->scan_matcher.set_reference_scan(&this->pre_pc);
+    glid_map.to_point_cloud(&world_pc);
+
+    world_pc.analyse_points();
+    this->scan_matcher.set_reference_scan(&world_pc);
     this->scan_matcher.set_current_scan(cur_pc);
     movement = this->scan_matcher.do_scan_matching();
     
-    current_pose.move_to(movement);
+    //current_pose.move_to(movement);
+    current_pose = movement;
 
 out:
     cur_pc->copy_to(this->pre_pc);

@@ -15,8 +15,10 @@ class Pose2D {
         double direction;
 
         void print(void) {
-            //std::cout << x << ", " << y << ", " << direction << std::endl;
             printf("%lf, %lf, %lf\n", x, y, direction);
+        }
+        void print(uint32_t num) {
+            printf("[%05d]%lf, %lf, %lf\n", num, x, y, direction);
         }
         void move_to(const Pose2D& move){
             direction += move.direction;
@@ -25,6 +27,6 @@ class Pose2D {
         }
 
     protected:
-        
+
     private:
 };

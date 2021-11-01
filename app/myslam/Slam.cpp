@@ -64,9 +64,11 @@ void Slam::process_loop(void)
 {
     PointCloud cur_pc;
     const double control_period = 0.1f;
-    ScanMatcher scan_matcher;
+    //ScanMatcher scan_matcher(&this->plotter);
+    ScanMatcher scan_matcher(NULL);
     PoseEstimator pose_estimator(control_period, scan_matcher);
     struct timeval timeval;
+    uint32_t loop_num = 0;
 
     this->running = true;
 
@@ -90,15 +92,17 @@ void Slam::process_loop(void)
         }
 
         // 現在位置の推定
-        Pose2D cur_pose = pose_estimator.get_estimated_position(od_l, od_r, &cur_pc);
+        Pose2D cur_pose = pose_estimator.estimate_position(od_l, od_r, &cur_pc, this->glid_map);
 
         // ワールドマップを更新
+        cur_pc.move(cur_pose);
         grow_world_map(&cur_pc);
 
         // 推定位置を表示
-        //cur_pose.print();
-        //plotter.plot(cur_pose, &this->world_map);
+        cur_pose.print(loop_num);
         plotter.plot(cur_pose, this->glid_map);
+
+        loop_num++;
 
         usleep(control_period * 1000 * 1000);
     }
@@ -118,7 +122,7 @@ void Slam::update_world_map(const PointCloud *cur_pc)
  */
 void Slam::grow_world_map(const PointCloud *cur_pc)
 {
-    this->world_map.add(cur_pc);
+    //this->world_map.add(cur_pc);
     this->glid_map.set_points(cur_pc);
     return;
 }
