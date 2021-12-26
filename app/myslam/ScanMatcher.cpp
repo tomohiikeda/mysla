@@ -109,11 +109,11 @@ Pose2D ScanMatcher::do_scan_matching(void) const
     }
 
     //printf("done iter=%d ev=%f\n", iter, ev);
-    if (ev < 3000) {
-        total_dev.x = 0;
-        total_dev.y = 0;
-        total_dev.direction = 0;
-    }
+    //if (ev < 3000) {
+    //    total_dev.x = 0;
+    //    total_dev.y = 0;
+    //    total_dev.direction = 0;
+    //}
 
     //if (ev > 30000) {
     //    this->ref_scan->save_to_file("ref_scan.dat");

@@ -6,8 +6,13 @@
 #include "Pose2D.hpp"
 #include "PointCloud.hpp"
 #include "GlidMap.hpp"
-class Slam{
+class Slam {
     public:
+        typedef enum {
+            slam_mode,
+            save_mode,
+        } Mode;
+
         Slam(ISensor& sensor, IOdometer& odometer, IPlotter& plotter):
             sensor(sensor),
             odometer(odometer),
@@ -15,7 +20,7 @@ class Slam{
             running = false;
         }
         bool init(void);
-        bool start(void);
+        bool start(Slam::Mode mode);
         void stop(void);
 
     protected:

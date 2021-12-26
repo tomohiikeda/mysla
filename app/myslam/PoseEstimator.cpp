@@ -42,15 +42,16 @@ Pose2D PoseEstimator::estimate_from_scan(const PointCloud *cur_pc, const GlidMap
         goto out;
     }
 
-    glid_map.to_point_cloud(&world_pc);
+    //glid_map.to_point_cloud(&world_pc);
+    //world_pc.analyse_points();
+    this->pre_pc.analyse_points();
 
-    world_pc.analyse_points();
-    this->scan_matcher.set_reference_scan(&world_pc);
+    this->scan_matcher.set_reference_scan(&this->pre_pc);
     this->scan_matcher.set_current_scan(cur_pc);
     movement = this->scan_matcher.do_scan_matching();
     
     //current_pose.move_to(movement);
-    current_pose = movement;
+    current_pose.move_to(movement);
 
 out:
     cur_pc->copy_to(this->pre_pc);

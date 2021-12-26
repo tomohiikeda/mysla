@@ -17,14 +17,21 @@
 
 /**
  * @brief Ctrl+Cを押されたときのハンドラ
+ * 
  */
-
 bool ctrl_c_pressed;
 static void ctrlc(int)
 {
     ctrl_c_pressed = true;
 }
 
+/**
+ * @brief SLAM実行モード
+ * 
+ * @param argc 
+ * @param argv 
+ * @return int 
+ */
 int slam_main(int argc, const char *argv[])
 {
     printf("run SLAM mode\n");
@@ -33,18 +40,16 @@ int slam_main(int argc, const char *argv[])
     PulseCounter pulse_sensor;
     GnuplotPlotter plotter;
     Slam *slam = new Slam(lidar, pulse_sensor, plotter);
-    
+
     Motor motor;
     RemoteControl remocon(motor);
-
-    
 
     if (slam->init() == false)
         return EXIT_FAILURE;
 
     signal(SIGINT, ctrlc);
 
-    if (slam->start() == false) {
+    if (slam->start(Slam::slam_mode) == false) {
         printf("failed to start SLAM\n");
         return EXIT_FAILURE;
     }
@@ -54,14 +59,14 @@ int slam_main(int argc, const char *argv[])
         return EXIT_FAILURE;
     }
 
-    //if (remocon.init() == false)
-    //    return EXIT_FAILURE;
+    if (remocon.init() == false)
+        return EXIT_FAILURE;
 
     while (ctrl_c_pressed == false)
         sleep(1);
 
     slam->stop();
-    //remocon.deinit();
+    remocon.deinit();
     motor.deinit();
 
     delete slam;
@@ -69,34 +74,65 @@ int slam_main(int argc, const char *argv[])
     return EXIT_SUCCESS;
 }
 
+/**
+ * @brief DS4で動かして、スキャンを保存するモード
+ * 
+ * @param argc 
+ * @param argv 
+ * @return int 
+ */
 int save_main(int argc, const char *argv[])
 {
     printf("run save mode\n");
 
     Lidar lidar;
-    if(lidar.init() == false)
-        return false;
-
-    if(lidar.start() == false)
+    if (lidar.init() == false)
         return EXIT_FAILURE;
 
-    PointCloud cur_pc;
-    for (int i=0; i<4; i++) {
-        if (lidar.get_point_cloud(&cur_pc) == false) {
-            goto exit;
-        }
-        char filename[20];
-        snprintf(filename, sizeof(filename), "pt_%d.txt", i);
-        cur_pc.save_to_file(filename);
-        printf("%d\n", i);
-        sleep(3);
+    if (lidar.start() == false)
+        return EXIT_FAILURE;
+
+    Motor motor;
+    if (motor.init() == false)
+        return EXIT_FAILURE;
+
+    RemoteControl remocon(motor);
+    if (remocon.init() == false)
+        return EXIT_FAILURE;
+
+    GnuplotPlotter plotter;
+    if (plotter.open() == false)
+        return EXIT_FAILURE;
+
+    signal(SIGINT, ctrlc);
+
+    uint32_t save_index = 0;
+    while (ctrl_c_pressed == false) {
+        PointCloud pc;
+        char filename[10] = {0};
+        sprintf(filename, "pt_%d.txt", save_index);
+        lidar.get_point_cloud(&pc);
+        pc.save_to_file(filename);
+        //plotter.plot(&pc);
+        sleep(1);
+        save_index++;
     }
 
-exit:
     lidar.stop();
+    plotter.close();
+    motor.deinit();
+    remocon.deinit();
+
     return EXIT_SUCCESS;
 }
 
+/**
+ * @brief スキャンマッチングだけを行うモード
+ * 
+ * @param argc 
+ * @param argv 
+ * @return int 
+ */
 int scan_matching_main(int argc, const char *argv[])
 {
     printf("run matching mode\n");
@@ -124,6 +160,73 @@ int scan_matching_main(int argc, const char *argv[])
     return EXIT_SUCCESS;
 }
 
+/**
+ * @brief Lidarでスキャンしたものをリアルタイムでプロットするモード
+ * 
+ * @param argc 
+ * @param argv 
+ * @return int 
+ */
+int scan_plot_main(int argc, const char *argv[])
+{
+    printf("run scan_plot mode\n");
+
+    Lidar lidar;
+    if (lidar.init() == false)
+        return EXIT_FAILURE;
+
+    if (lidar.start() == false)
+        return EXIT_FAILURE;
+
+    GnuplotPlotter plotter;
+    if (plotter.open() == false)
+        return EXIT_FAILURE;
+
+    signal(SIGINT, ctrlc);
+
+    while (ctrl_c_pressed == false) {
+        PointCloud pc;
+        lidar.get_point_cloud(&pc);
+        plotter.plot(&pc);
+    }
+
+    lidar.stop();
+    plotter.close();
+
+    return EXIT_SUCCESS;
+}
+
+/**
+ * @brief DS4で操作するモード
+ * 
+ * @param argc 
+ * @param argv 
+ * @return int 
+ */
+int remocon_main(int argc, const char *argv[])
+{
+    printf("run remocon mode\n");
+
+    Motor motor;
+    if (motor.init() == false)
+        return EXIT_FAILURE;
+
+    RemoteControl remocon(motor);
+    if (remocon.init() == false)
+        return EXIT_FAILURE;
+
+    signal(SIGINT, ctrlc);
+
+    while (ctrl_c_pressed == false) {
+        sleep(1);
+    }
+
+    motor.deinit();
+    remocon.deinit();
+
+    return EXIT_SUCCESS;
+}
+
 struct argstr_func {
     const char *string;
     int (*func)(int argc, const char *argv[]);
@@ -132,6 +235,8 @@ struct argstr_func {
 static const struct argstr_func main_func_table[] = {
     { "save",       save_main },
     { "matching",   scan_matching_main },
+    { "scan_plot",  scan_plot_main },
+    { "remocon",    remocon_main },
 };
 static const int table_size = sizeof(main_func_table) / sizeof(argstr_func);
 

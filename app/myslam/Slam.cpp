@@ -24,7 +24,7 @@ bool Slam::init(void)
 /**
  * @brief SLAM開始
  */
-bool Slam::start(void)
+bool Slam::start(Mode mode)
 {
     if(sensor.start() == false)
         return false;
@@ -63,6 +63,7 @@ void Slam::stop(void)
 void Slam::process_loop(void)
 {
     PointCloud cur_pc;
+    PointCloud temp_pc;
     const double control_period = 0.1f;
     //ScanMatcher scan_matcher(&this->plotter);
     ScanMatcher scan_matcher(NULL);
@@ -92,7 +93,9 @@ void Slam::process_loop(void)
         }
 
         // 現在位置の推定
-        Pose2D cur_pose = pose_estimator.estimate_position(od_l, od_r, &cur_pc, this->glid_map);
+        cur_pc.copy_to(temp_pc);
+        temp_pc.move(cur_pose);
+        Pose2D cur_pose = pose_estimator.estimate_position(od_l, od_r, &temp_pc, this->glid_map);
 
         // ワールドマップを更新
         cur_pc.move(cur_pose);

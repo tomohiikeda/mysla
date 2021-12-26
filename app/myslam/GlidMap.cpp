@@ -19,12 +19,19 @@ GlidMap::GlidMap(void)
  */
 void GlidMap::set_points(const PointCloud *world_pc)
 {
+    for (int x=0; x<map_size_x; x++) {
+        for (int y=0; y<map_size_y; y++) {
+            if (this->glid_map[x][y])
+                this->glid_map[x][y]--;
+        }
+    }
+
     for (size_t i=0; i<world_pc->size(); i++) {
         uint32_t x_index = (world_pc->at(i).x - map_min_x) / glid_per;
         uint32_t y_index = (world_pc->at(i).y - map_min_y) / glid_per;
         if (1 <= x_index && x_index < map_size_x-1) {
             if (1 <= y_index && y_index < map_size_y-1) {
-                this->glid_map[x_index][y_index] = 1;
+                this->glid_map[x_index][y_index] = 3;
             }
         }
     }
