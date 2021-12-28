@@ -110,11 +110,11 @@ int save_main(int argc, const char *argv[])
     while (ctrl_c_pressed == false) {
         PointCloud pc;
         char filename[10] = {0};
-        sprintf(filename, "pt_%d.txt", save_index);
+        sprintf(filename, "pt_%04d.txt", save_index);
         lidar.get_point_cloud(&pc);
         pc.save_to_file(filename);
         //plotter.plot(&pc);
-        sleep(1);
+        sleep(0.3);
         save_index++;
     }
 

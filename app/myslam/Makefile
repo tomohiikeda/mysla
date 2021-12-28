@@ -27,14 +27,14 @@ CXXSRC += \
 		main/main.cpp \
 		device/Lidar.cpp \
 		device/PulseCounter.cpp \
+		device/Motor.cpp \
+		device/DualShock4.cpp \
+		device/RemoteControl.cpp \
 		GnuplotPlotter.cpp \
 		Slam.cpp \
 		ScanMatcher.cpp \
 		PointCloud.cpp \
 		Util.cpp \
-		device/Motor.cpp \
-		device/DualShock4.cpp \
-		device/RemoteControl.cpp \
 		PoseEstimator.cpp \
 		GlidMap.cpp
 		
