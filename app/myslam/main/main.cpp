@@ -229,14 +229,15 @@ int remocon_main(int argc, const char *argv[])
 
 struct argstr_func {
     const char *string;
+    const int argnum;
     int (*func)(int argc, const char *argv[]);
 };
 
 static const struct argstr_func main_func_table[] = {
-    { "save",       save_main },
-    { "matching",   scan_matching_main },
-    { "scan_plot",  scan_plot_main },
-    { "remocon",    remocon_main },
+    { "save",       1, save_main },
+    { "scan_plot",  1, scan_plot_main },
+    { "remocon",    1, remocon_main },
+    { "matching",   3, scan_matching_main },
 };
 static const int table_size = sizeof(main_func_table) / sizeof(argstr_func);
 
@@ -245,18 +246,16 @@ static const int table_size = sizeof(main_func_table) / sizeof(argstr_func);
  */
 int main(int argc, const char *argv[])
 {
-    if (argc > 2) {
-        printf ("Argument is too much.");
-        return EXIT_FAILURE;
-    }
-
     if (argc == 1) {
         return slam_main(argc, argv);
     }
 
-    if (argc == 2) {
-        for (int i=0; i<table_size; i++){
-            if (!strcmp(argv[1], main_func_table[i].string)) {
+    for (int i=0; i<table_size; i++){
+        if (!strcmp(argv[1], main_func_table[i].string)) {
+            if (main_func_table[i].argnum != (argc - 1)) {
+                printf ("Argument num is invalid.\n");
+                return EXIT_FAILURE;
+            } else {
                 return main_func_table[i].func(argc, argv);
             }
         }
