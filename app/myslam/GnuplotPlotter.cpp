@@ -11,8 +11,6 @@ bool GnuplotPlotter::open(void)
 
     fprintf(fd, "set xr[-3000:3000]\n");
     fprintf(fd, "set yr[-3000:3000]\n");
-    //fprintf(fd, "set xr[-1:1]\n");
-    //fprintf(fd, "set yr[-1:1]\n");
     fprintf(fd, "set size square\n");
     fflush(fd);
     return true;

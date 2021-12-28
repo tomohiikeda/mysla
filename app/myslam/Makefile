@@ -24,17 +24,17 @@ MODULE_NAME := $(notdir $(CURDIR))
 include $(HOME_TREE)/mak_def.mk
 
 CXXSRC += \
-		main.cpp \
-		Lidar.cpp \
-		PulseCounter.cpp \
+		main/main.cpp \
+		device/Lidar.cpp \
+		device/PulseCounter.cpp \
 		GnuplotPlotter.cpp \
 		Slam.cpp \
 		ScanMatcher.cpp \
 		PointCloud.cpp \
 		Util.cpp \
-		Motor.cpp \
-		DualShock4.cpp \
-		RemoteControl.cpp \
+		device/Motor.cpp \
+		device/DualShock4.cpp \
+		device/RemoteControl.cpp \
 		PoseEstimator.cpp \
 		GlidMap.cpp
 		
