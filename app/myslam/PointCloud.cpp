@@ -39,7 +39,7 @@ void PointCloud::translate(double x, double y)
 {
     for (size_t i=0; i<points.size(); i++) {
         points.at(i).x += x;
-        points.at(i).y += x;
+        points.at(i).y += y;
     }
 }
 

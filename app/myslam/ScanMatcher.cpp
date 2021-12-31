@@ -5,13 +5,11 @@
 void ScanMatcher::set_current_scan(const PointCloud *pc)
 {
     this->cur_scan = pc;
-    //printf("Current Scan size = %d\n", pc->size());
 }
 
 void ScanMatcher::set_reference_scan(const PointCloud *pc)
 {
     this->ref_scan = pc;
-    //printf("Reference Scan size = %d\n", pc->size());
 }
 
 /**
@@ -44,7 +42,6 @@ uint32_t ScanMatcher::is_matching_done(
         //printf("ave_ev=%f\n", ave_ev);
         return 2;
     }
-        
 
     return false;
 }
@@ -52,7 +49,17 @@ uint32_t ScanMatcher::is_matching_done(
 /**
  * @brief スキャンマッチング実行
  */
-Pose2D ScanMatcher::do_scan_matching(void) const
+Pose2D ScanMatcher::do_scan_matching(const PointCloud *cur_scan, const PointCloud *ref_scan, double speed)
+{
+    this->set_current_scan(cur_scan);
+    this->set_reference_scan(ref_scan);
+    return do_scan_matching();
+}
+
+/**
+ * @brief スキャンマッチング実行
+ */
+Pose2D ScanMatcher::do_scan_matching(double speed) const
 {
     std::vector<uint32_t> associate_list;
     PointCloud temp_scan = *this->cur_scan;
@@ -66,7 +73,7 @@ Pose2D ScanMatcher::do_scan_matching(void) const
 
     if (this->is_debug_mode()) {
         this->debug_plotter->plot(this->ref_scan, this->cur_scan);
-        sleep(3);
+        sleep(speed);
     }
 
     int iter = 0;
@@ -97,7 +104,7 @@ Pose2D ScanMatcher::do_scan_matching(void) const
         if (this->is_debug_mode()) {
             plot_for_debug(&temp_scan, this->ref_scan, associate_list);
             printf("[%d]dx=%f, dy=%f, dtheta=%f, cost_type=%d, ev=%f\n", iter, dev.x, dev.y, dev.direction, cost_type, ev);
-            sleep(1);
+            sleep(0.5 * speed);
         }
 
         // マッチングを終わらせるかチェック
@@ -139,8 +146,13 @@ double ScanMatcher::differential(const PointCloud *scan,
 }
 
 /**
- * @brief 対応点リストassociate_listに対して、
- * scanをどのくらい動かせばref_scanに対するコストが最小になるか求める
+ * @brief 最急降下法によりscanとref_scanのズレを検出する
+ * 
+ * @param scan 現在スキャン
+ * @param ref_scan 参照スキャン
+ * @param associate_list 点の対応付けリスト
+ * @param cost_type コストをどのタイプで計算するか
+ * @return Pose2D 
  */
 Pose2D ScanMatcher::steepest_descent(const PointCloud *scan,
                                      const PointCloud *ref_scan,
@@ -149,14 +161,14 @@ Pose2D ScanMatcher::steepest_descent(const PointCloud *scan,
 {
     const double dd = 0.000001;
     const double da = COST_SIMPLE ? 5 : 2.5;
-    const double kk = cost_type == COST_SIMPLE ? 0.00000001 : 0.00000001;
+    const double kk = (cost_type == COST_SIMPLE) ? 0.00000001 : 0.00000001;
     PointCloud temp_scan = *scan;
     double ev = this->cost_function(&temp_scan, ref_scan, associate_list, cost_type);
     double pre_ev = 0;
     double total_dtheta = 0;
     double total_dx = 0;
     double total_dy = 0;
-    PointCloud dtheta_scan = temp_scan;
+    PointCloud dtheta_scan;
     PointCloud dx_scan = temp_scan;
     PointCloud dy_scan = temp_scan;
 
@@ -170,7 +182,7 @@ Pose2D ScanMatcher::steepest_descent(const PointCloud *scan,
         dx_scan.translate(da, 0);
         dy_scan.translate(0, da);
 
-        //printf("[%d]ev=%f, diff=%f\n", i, ev, ev-pre_ev);
+        printf("[%d]ev=%f, diff=%f\n", i, ev, ev-pre_ev);
 
         double dtheta = differential(&dtheta_scan, ref_scan, associate_list, ev, dd, kk, cost_type);
         double dx = differential(&dx_scan, ref_scan, associate_list, ev, dd, kk, cost_type);

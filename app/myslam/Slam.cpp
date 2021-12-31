@@ -67,7 +67,7 @@ void Slam::process_loop(void)
     const double control_period = 0.1f;
     //ScanMatcher scan_matcher(&this->plotter);
     ScanMatcher scan_matcher(NULL);
-    PoseEstimator pose_estimator(control_period, scan_matcher);
+    PoseEstimator pose_estimator(scan_matcher);
     struct timeval timeval;
     uint32_t loop_num = 0;
 
@@ -95,7 +95,7 @@ void Slam::process_loop(void)
         // 現在位置の推定
         cur_pc.copy_to(temp_pc);
         temp_pc.move(cur_pose);
-        Pose2D cur_pose = pose_estimator.estimate_position(od_l, od_r, &temp_pc, this->glid_map);
+        //Pose2D cur_pose = pose_estimator.estimate_position(od_l, od_r, &temp_pc, this->glid_map);
 
         // ワールドマップを更新
         cur_pc.move(cur_pose);

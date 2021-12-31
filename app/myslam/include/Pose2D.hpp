@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include "Util.hpp"
 
 class Pose2D {
     public:
@@ -18,7 +19,7 @@ class Pose2D {
             printf("%lf, %lf, %lf\n", x, y, direction);
         }
         void print(uint32_t num) {
-            printf("[%05d]%lf, %lf, %lf(%lf degree)\n", num, x, y, direction, 360 * direction / (2 * M_PI));
+            printf("[%05d]%lf, %lf, %lf(%lf degree)\n", num, x, y, direction, to_degree(direction));
         }
         void move_to(const Pose2D& move){
             direction += move.direction;

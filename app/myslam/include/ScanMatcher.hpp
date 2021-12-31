@@ -12,7 +12,8 @@ class ScanMatcher {
         virtual ~ScanMatcher(void){};
         void set_current_scan(const PointCloud *pc);
         void set_reference_scan(const PointCloud *pc);
-        Pose2D do_scan_matching(void) const;
+        Pose2D do_scan_matching(double speed = 1.0f) const;
+        Pose2D do_scan_matching(const PointCloud *cur_scan, const PointCloud *ref_scan, const double speed);
     
     protected:
         enum cost_type {
