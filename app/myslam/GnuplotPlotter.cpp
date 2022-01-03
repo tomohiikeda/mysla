@@ -9,10 +9,10 @@ bool GnuplotPlotter::open(void)
     if (fd == NULL)
         return false;
 
-    fprintf(fd, "set xr[-3000:3000]\n");
-    fprintf(fd, "set yr[-3000:3000]\n");
+    fprintf(fd, "set xr[%d:%d]\n", this->MIN_PLOT_X, this->MAX_PLOT_X);
+    fprintf(fd, "set yr[%d:%d]\n", this->MIN_PLOT_Y, this->MAX_PLOT_Y);
     fprintf(fd, "set size square\n");
-    fprintf(fd, "set term x11 size 1500,1500\n");
+    fprintf(fd, "set term x11 size 1800,1800\n");
     fprintf(fd, "set zeroaxis\n");
     fflush(fd);
     return true;
@@ -40,7 +40,7 @@ void GnuplotPlotter::plot(const Pose2D pose) const
     fprintf(fd, "$pose << EOD\n");
     fprintf(fd, "%f %f\n", pose.x, pose.y);
     fprintf(fd, "EOD\n");
-    fprintf(fd, "plot \"$pose\" with points pointtype 1 pointsize 1\n");
+    fprintf(fd, "plot \"$pose\" with points pointtype 1 pointsize %f\n", this->POINT_SIZE);
     fflush(fd);
 }
 
@@ -55,7 +55,7 @@ void GnuplotPlotter::plot(const Pose2D pose, const PointCloud *pc) const
     this->input_points(pc, data_var);
     fprintf(fd, "plot \
                 \"$%s\" with lines, \
-                \"$%s\" with points pointtype 7 pointsize 1\n", pose_var, data_var);
+                \"$%s\" with points pointtype 7 pointsize %f\n", pose_var, data_var, this->POINT_SIZE);
 }
 
 void GnuplotPlotter::plot(const PointCloud *pc) const
@@ -66,7 +66,7 @@ void GnuplotPlotter::plot(const PointCloud *pc) const
     const char *data_var = "data";
     this->input_points(pc, data_var);
 
-    fprintf(fd, "plot \"$%s\" with points pointtype 7 pointsize 1\n", data_var);
+    fprintf(fd, "plot \"$%s\" with points pointtype 7 pointsize %f\n", data_var, this->POINT_SIZE);
     return;
 }
 
@@ -91,10 +91,11 @@ void GnuplotPlotter::plot(const PointCloud *pc_0, const PointCloud *pc_1) const
             plotfile_0, plotfile_1, normalfile_0);
     */
     fprintf(fd, "plot \
-                \"$%s\" with points pointtype 7 pointsize 1, \
-                \"$%s\" with points pointtype 7 pointsize 1, \
+                \"$%s\" with points pointtype 7 pointsize %f, \
+                \"$%s\" with points pointtype 7 pointsize %f, \
                 \n",
-            plotfile_0, plotfile_1);
+            plotfile_0, this->POINT_SIZE, plotfile_1, this->POINT_SIZE);
+            
     return;
 }
 
@@ -113,10 +114,10 @@ void GnuplotPlotter::plot(const PointCloud *pc_0,
     this->input_associates(pc_0, pc_1, associate_list, plotfile_2);
 
     fprintf(fd, "plot \
-                \"$%s\" with points pointtype 7 pointsize 1, \
-                \"$%s\" with points pointtype 7 pointsize 1, \
+                \"$%s\" with points pointtype 7 pointsize %f, \
+                \"$%s\" with points pointtype 7 pointsize %f, \
                 \"$%s\" with linespoints pointtype 0\n",
-            plotfile_0, plotfile_1, plotfile_2);
+            plotfile_0, this->POINT_SIZE, plotfile_1, this->POINT_SIZE, plotfile_2);
     return;
 }
 

@@ -26,7 +26,12 @@ class GnuplotPlotter: public IPlotter{
         void input_normal(const PointCloud *pc, const char *data_var) const;
         void input_points(const PointCloud *pc, const char *data_var) const;
         void input_pose(const Pose2D pose, const char *data_var) const;
-        const int POINT_SIZE = 1;
+
+        const int MIN_PLOT_X = -3000;
+        const int MAX_PLOT_X =  3000;
+        const int MIN_PLOT_Y = -3000;
+        const int MAX_PLOT_Y =  3000;
+        const double POINT_SIZE = 0.4f;
 
     private:
 };
