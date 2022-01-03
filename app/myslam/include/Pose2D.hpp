@@ -22,9 +22,14 @@ class Pose2D {
             printf("[%05d]%lf, %lf, %lf(%lf degree)\n", num, x, y, direction, to_degree(direction));
         }
         void move_to(const Pose2D& move){
-            direction += move.direction;
-            x += move.x;
-            y += move.y;
+            this->direction += move.direction;
+            this->x += move.x;
+            this->y += move.y;
+        }
+        void set(double x, double y, double dir) {
+            this->direction = dir;
+            this->x = x;
+            this->y = y;
         }
 
     protected:

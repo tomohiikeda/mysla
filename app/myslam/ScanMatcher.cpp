@@ -24,8 +24,9 @@ uint32_t ScanMatcher::is_matching_done(
         uint32_t history_num,
         enum cost_type cost_type) const
 {
+    
     // 評価値がちょっとしか変化していない。
-    if (std::abs(ev - pre_ev) < 10)
+    if (std::abs(ev - pre_ev) < 1)
         return 1;
 
     // 過去N回分の評価値の移動平均が小さい
@@ -53,7 +54,7 @@ Pose2D ScanMatcher::do_scan_matching(const PointCloud *cur_scan, const PointClou
 {
     this->set_current_scan(cur_scan);
     this->set_reference_scan(ref_scan);
-    return do_scan_matching();
+    return do_scan_matching(speed);
 }
 
 /**
@@ -88,11 +89,17 @@ Pose2D ScanMatcher::do_scan_matching(double speed) const
 
         // 計算した分移動する。
         temp_scan.move(dev);
-        total_dev.move_to(dev);
+
+
 
         // 移動後のコストを計算する
         pre_ev = ev;
         ev = this->cost_function(&temp_scan, ref_scan, associate_list, cost_type);
+
+        // 評価値が小さすぎる場合はほぼ動いていないと判断して現在位置を動かさない。
+        if (ev >= 2000) {
+            total_dev.move_to(dev);
+        }
 
         // コストの過去N回分を記録する
         for (int i = history_num - 1; i > 0; i--) {
@@ -110,17 +117,12 @@ Pose2D ScanMatcher::do_scan_matching(double speed) const
         // マッチングを終わらせるかチェック
         uint32_t done = is_matching_done(ev, pre_ev, ev_history, history_num, cost_type);
         if (done) {
-            //printf("done reason=%d, iter=%d\n", done, iter);
+            printf("done reason=%d, iter=%d\n", done, iter);
             break;
         }
     }
 
     //printf("done iter=%d ev=%f\n", iter, ev);
-    //if (ev < 3000) {
-    //    total_dev.x = 0;
-    //    total_dev.y = 0;
-    //    total_dev.direction = 0;
-    //}
 
     //if (ev > 30000) {
     //    this->ref_scan->save_to_file("ref_scan.dat");
@@ -164,25 +166,22 @@ Pose2D ScanMatcher::steepest_descent(const PointCloud *scan,
     const double kk = (cost_type == COST_SIMPLE) ? 0.00000001 : 0.00000001;
     PointCloud temp_scan = *scan;
     double ev = this->cost_function(&temp_scan, ref_scan, associate_list, cost_type);
+    Pose2D total_mov(0,0,0);
+    double min_ev = ev;
     double pre_ev = 0;
-    double total_dtheta = 0;
-    double total_dx = 0;
-    double total_dy = 0;
-    PointCloud dtheta_scan;
-    PointCloud dx_scan = temp_scan;
-    PointCloud dy_scan = temp_scan;
+    Pose2D min_mov(0,0,0);
+    int min_idx = 0;
+    printf("[0]ev=%f, (0, 0, 0)\n", ev);
 
-    for (int i=0; i<500 && std::abs(ev-pre_ev) > 1; i++) {
-        
-        dtheta_scan = temp_scan;
-        dx_scan = temp_scan;
-        dy_scan = temp_scan;
+    for (int i=1; i<500 && std::abs(ev-pre_ev) > 0.01f; i++) {
+
+        PointCloud dtheta_scan = temp_scan;
+        PointCloud dx_scan = temp_scan;
+        PointCloud dy_scan = temp_scan;
 
         dtheta_scan.rotate(dd);
         dx_scan.translate(da, 0);
         dy_scan.translate(0, da);
-
-        printf("[%d]ev=%f, diff=%f\n", i, ev, ev-pre_ev);
 
         double dtheta = differential(&dtheta_scan, ref_scan, associate_list, ev, dd, kk, cost_type);
         double dx = differential(&dx_scan, ref_scan, associate_list, ev, dd, kk, cost_type);
@@ -195,15 +194,21 @@ Pose2D ScanMatcher::steepest_descent(const PointCloud *scan,
         pre_ev = ev;
         ev = this->cost_function(&temp_scan, ref_scan, associate_list, cost_type);
 
-        //if (ev > min_ev)
-        //    break;
+        printf("[%d]ev=%f, (%f, %f, %f)\n", i, ev, dx, dy, dtheta);
 
-        total_dtheta += dtheta;
-        total_dx += dx;
-        total_dy += dy;
+        total_mov.x += dx;
+        total_mov.y += dy;
+        total_mov.direction += dtheta;
+
+        if (ev < min_ev) {
+            min_ev = ev;
+            min_mov = total_mov;
+            min_idx = i;
+        }
+
     }
-    Pose2D dev(total_dx, total_dy, total_dtheta);
-    return dev;
+    printf("[min]%d(%f, %f, %f)\n", min_idx, min_mov.x, min_mov.y, min_mov.direction);
+    return min_mov;
 }
 
 /**

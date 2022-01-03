@@ -111,7 +111,7 @@ int save_main(int argc, const char *argv[])
         lidar.get_point_cloud(&pc);
         pc.save_to_file(filename);
         //plotter.plot(&pc);
-        sleep(0.3);
+        sleep(1.0);
         save_index++;
     }
 
@@ -150,15 +150,15 @@ int scan_matching_main(int argc, const char *argv[])
         printf("//-------------------------------------------------------\n");
         PointCloud ref_scan;
         PointCloud cur_scan;
-        char ref_filename[20];
-        char cur_filename[20];
+        char ref_filename[30];
+        char cur_filename[30];
         sprintf(ref_filename, "%s/pt_%04d.txt", argv[2], i);
         sprintf(cur_filename, "%s/pt_%04d.txt", argv[2], i+1);
         ref_scan.load_from_file(ref_filename);
         cur_scan.load_from_file(cur_filename);
         ref_scan.analyse_points();
 
-        Pose2D dev = scan_matcher.do_scan_matching(&cur_scan, &ref_scan, 0.5f);
+        Pose2D dev = scan_matcher.do_scan_matching(&cur_scan, &ref_scan, 2.0f);
 
         double theta = cur_pose.direction + dev.direction;
         double x = dev.x * cos(theta) - dev.y * sin(theta);
