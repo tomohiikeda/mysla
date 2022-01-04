@@ -3,7 +3,7 @@
 #include "Common.hpp"
 #include "PointCloud.hpp"
 #include "Pose2D.hpp"
-#include "GlidMap.hpp"
+#include "GridMap.hpp"
 
 class IPlotter{
     public:
@@ -16,8 +16,8 @@ class IPlotter{
         virtual void plot(const PointCloud *pc_0,
                           const PointCloud *pc_1,
                           const std::vector<uint32_t>& associate_list) const = 0;
-        virtual void plot(const GlidMap& glid_map) const = 0;
-        virtual void plot(const Pose2D pose, const GlidMap& glid_map) const = 0;
+        virtual void plot(const GridMap& grid_map) const = 0;
+        virtual void plot(const Pose2D pose, const GridMap& grid_map) const = 0;
 
     protected:
 

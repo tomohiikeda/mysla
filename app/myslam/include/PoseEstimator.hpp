@@ -3,7 +3,7 @@
 #include "Common.hpp"
 #include "Pose2D.hpp"
 #include "ScanMatcher.hpp"
-#include "GlidMap.hpp"
+#include "GridMap.hpp"
 #include "SlamData.hpp"
 
 class PoseEstimator{
@@ -15,7 +15,8 @@ class PoseEstimator{
     protected:
         ScanMatcher& scan_matcher;
         Pose2D current_pose;
-        Pose2D estimate_from_odometory(const int16_t od_l, const int16_t od_r);
+        Pose2D estimate_from_odometory(const odometory_t odom);
         Pose2D estimate_from_scan(const PointCloud *cur_pc);
         PointCloud pre_pc;
+        Pose2D diff_from_pre;
 };

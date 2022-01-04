@@ -16,8 +16,8 @@ class GnuplotPlotter: public IPlotter{
         void plot(const PointCloud *pc_0,
                   const PointCloud *pc_1,
                   const std::vector<uint32_t>& associate_list) const;
-        void plot(const GlidMap& glid_map) const;
-        void plot(const Pose2D pose, const GlidMap& glid_map) const;
+        void plot(const GridMap& grid_map) const;
+        void plot(const Pose2D pose, const GridMap& grid_map) const;
 
     protected:
         FILE *fd;
@@ -31,7 +31,7 @@ class GnuplotPlotter: public IPlotter{
         const int MAX_PLOT_X =  3000;
         const int MIN_PLOT_Y = -3000;
         const int MAX_PLOT_Y =  3000;
-        const double POINT_SIZE = 0.4f;
+        const double POINT_SIZE = 1.0f;
 
     private:
 };

@@ -56,6 +56,7 @@ void GnuplotPlotter::plot(const Pose2D pose, const PointCloud *pc) const
     fprintf(fd, "plot \
                 \"$%s\" with lines, \
                 \"$%s\" with points pointtype 7 pointsize %f\n", pose_var, data_var, this->POINT_SIZE);
+    fflush(fd);
 }
 
 void GnuplotPlotter::plot(const PointCloud *pc) const
@@ -122,25 +123,25 @@ void GnuplotPlotter::plot(const PointCloud *pc_0,
     return;
 }
 
-void GnuplotPlotter::plot(const GlidMap& glid_map) const
+void GnuplotPlotter::plot(const GridMap& grid_map) const
 {
     if (fd == NULL)
         return;
 
     PointCloud pc;
-    glid_map.to_point_cloud(&pc);
+    grid_map.to_point_cloud(&pc);
     this->plot(&pc);
 
     return;
 }
 
-void GnuplotPlotter::plot(const Pose2D pose, const GlidMap& glid_map) const
+void GnuplotPlotter::plot(const Pose2D pose, const GridMap& grid_map) const
 {
     if (fd == NULL)
         return;
 
     PointCloud pc;
-    glid_map.to_point_cloud(&pc);
+    grid_map.to_point_cloud(&pc);
     this->plot(pose, &pc);
 
     return;

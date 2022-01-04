@@ -37,7 +37,7 @@ CXXSRC += \
 		PointCloud.cpp \
 		Util.cpp \
 		PoseEstimator.cpp \
-		GlidMap.cpp
+		GridMap.cpp
 		
 C_INCLUDES += -I$(CURDIR)/../../sdk/include -I$(CURDIR)/../../sdk/src -I$(CURDIR)/include
 

@@ -171,7 +171,7 @@ Pose2D ScanMatcher::steepest_descent(const PointCloud *scan,
     double pre_ev = 0;
     Pose2D min_mov(0,0,0);
     int min_idx = 0;
-    printf("[0]ev=%f, (0, 0, 0)\n", ev);
+    //printf("[0]ev=%f, (0, 0, 0)\n", ev);
 
     for (int i=1; i<500 && std::abs(ev-pre_ev) > 0.01f; i++) {
 
@@ -194,7 +194,11 @@ Pose2D ScanMatcher::steepest_descent(const PointCloud *scan,
         pre_ev = ev;
         ev = this->cost_function(&temp_scan, ref_scan, associate_list, cost_type);
 
-        printf("[%d]ev=%f, (%f, %f, %f)\n", i, ev, dx, dy, dtheta);
+        //printf("[%d]ev=%f, (%f, %f, %f)\n", i, ev, dx, dy, dtheta);
+
+        // 評価値が跳ね上がった場合はそこで終わる
+        if (ev - pre_ev > 5000)
+            break;
 
         total_mov.x += dx;
         total_mov.y += dy;

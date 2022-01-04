@@ -5,7 +5,7 @@
 #include "IPlotter.hpp"
 #include "Pose2D.hpp"
 #include "PointCloud.hpp"
-#include "GlidMap.hpp"
+#include "GridMap.hpp"
 class Slam {
     public:
         typedef enum {
@@ -31,7 +31,7 @@ class Slam {
         pthread_t slam_thread;
         Pose2D cur_pose;
         PointCloud world_map;
-        GlidMap glid_map;
+        GridMap grid_map;
 
         void update_world_map(const PointCloud *cur_pc);
         void estimate_cur_pose(const PointCloud *cur_pc);
