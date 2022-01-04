@@ -26,7 +26,7 @@ output/Linux/Release/myslam
 ```
 
 * SlamData保存モード  
-LidarとPulse Counterのデータを取得し、ファイルに保存するモードです。ファイル名は、pt_xxxx.txt(xxxxは通し番号)に保存されます。Interval値の単位は秒です。
+LidarとPulse Counterのデータを取得し、ファイルに保存するモードです。ファイル名は、pt_xxxx.txt(xxxxは通し番号)に保存されます。Interval値の単位は秒。
 ```
 output/Linux/Release/myslam save <directory名> <Interval(sec)>
 ```
