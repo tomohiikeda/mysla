@@ -1,11 +1,7 @@
 /*
  * main.cpp
  */
-
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
+#include "Common.hpp"
 #include "GnuplotPlotter.hpp"
 #include "Lidar.hpp"
 #include "PulseCounter.hpp"
@@ -15,6 +11,31 @@
 #include <string.h>
 #include "Motor.hpp"
 #include "PoseEstimator.hpp"
+
+static int slam_main(int argc, const char *argv[]);
+static int save_main(int argc, const char *argv[]);
+static int scan_matching_main(int argc, const char *argv[]);
+static int pose_estimate_main(int argc, const char *argv[]);
+static int scan_plot_main(int argc, const char *argv[]);
+static int remocon_main(int argc, const char *argv[]);
+static int usage_main(int argc, const char *argv[]);
+
+struct argstr_func {
+    const char *string;
+    const int argnum;
+    int (*func)(int argc, const char *argv[]);
+    const char *desc;
+};
+
+static const struct argstr_func main_func_table[] = {
+    { "save",           3,  save_main,          "save slam data"},
+    { "scan_plot",      1,  scan_plot_main,     "scan" },
+    { "remocon",        1,  remocon_main,       "remocon" },
+    { "matching",       4,  scan_matching_main, "scan matching" },
+    { "pose_estimate",  4,  pose_estimate_main, "pose estimate" },
+    { "usage",          1,  usage_main,         "usage" },
+};
+static const int table_size = sizeof(main_func_table) / sizeof(argstr_func);
 
 /**
  * @brief Ctrl+Cを押されたときのハンドラ
@@ -33,7 +54,7 @@ static void ctrlc(int)
  * @param argv 
  * @return int 
  */
-int slam_main(int argc, const char *argv[])
+static int slam_main(int argc, const char *argv[])
 {
     Lidar lidar;
     PulseCounter pulse_sensor;
@@ -78,9 +99,10 @@ int slam_main(int argc, const char *argv[])
  * 
  * @param argc 
  * @param argv[2] 保存するディレクトリ名
+ * @param argv[3] Interval(sec)
  * @return int 
  */
-int save_main(int argc, const char *argv[])
+static int save_main(int argc, const char *argv[])
 {
     Lidar lidar;
     if (lidar.init() == false)
@@ -101,17 +123,21 @@ int save_main(int argc, const char *argv[])
     if (plotter.open() == false)
         return EXIT_FAILURE;
 
+    PulseCounter pulse_sensor;
+    if (pulse_sensor.init() == false)
+        return EXIT_FAILURE;
+
     signal(SIGINT, ctrlc);
 
     uint32_t save_index = 0;
     while (ctrl_c_pressed == false) {
-        PointCloud pc;
-        char filename[30] = {0};
+        SlamData slam_data;
+        char filename[50] = {0};
         sprintf(filename, "%s/pt_%04d.txt", argv[2], save_index);
-        lidar.get_point_cloud(&pc);
-        pc.save_to_file(filename);
-        //plotter.plot(&pc);
-        sleep(1.0);
+        lidar.get_point_cloud(slam_data.pc());
+        pulse_sensor.get_odometory(slam_data.odometory());
+        slam_data.save_to_file(filename);
+        sleep(std::stod(argv[3]));
         save_index++;
     }
 
@@ -132,7 +158,7 @@ int save_main(int argc, const char *argv[])
  * @param argv[4] 最終インデックス
  * @return int 
  */
-int scan_matching_main(int argc, const char *argv[])
+static int scan_matching_main(int argc, const char *argv[])
 {
     GnuplotPlotter plotter;
     ScanMatcher scan_matcher(&plotter);
@@ -142,23 +168,23 @@ int scan_matching_main(int argc, const char *argv[])
 
     int start = atoi(argv[3]);
     int end = atoi(argv[4]);
-    Pose2D cur_pose;
+    Pose2D cur_pose(0, 0, 0);
 
     for (int i=start; i<end; i++) {
         printf("//-------------------------------------------------------\n");
         printf("//  Index = %d (%fmm, %fmm, %fdeg)\n", i, cur_pose.x, cur_pose.y, to_degree(cur_pose.direction));
         printf("//-------------------------------------------------------\n");
-        PointCloud ref_scan;
-        PointCloud cur_scan;
+        SlamData ref_data;
+        SlamData cur_data;
         char ref_filename[30];
         char cur_filename[30];
         sprintf(ref_filename, "%s/pt_%04d.txt", argv[2], i);
         sprintf(cur_filename, "%s/pt_%04d.txt", argv[2], i+1);
-        ref_scan.load_from_file(ref_filename);
-        cur_scan.load_from_file(cur_filename);
-        ref_scan.analyse_points();
+        ref_data.load_from_file(ref_filename);
+        cur_data.load_from_file(cur_filename);
+        ref_data.pc()->analyse_points();
 
-        Pose2D dev = scan_matcher.do_scan_matching(&cur_scan, &ref_scan, 2.0f);
+        Pose2D dev = scan_matcher.do_scan_matching(cur_data.pc(), ref_data.pc(), 2.0f);
 
         double theta = cur_pose.direction + dev.direction;
         double x = dev.x * cos(theta) - dev.y * sin(theta);
@@ -189,11 +215,11 @@ int scan_matching_main(int argc, const char *argv[])
  * @param argv[4] 最終インデックス
  * @return int 
  */
-int pose_estimate_main(int argc, const char *argv[])
+static int pose_estimate_main(int argc, const char *argv[])
 {
     GnuplotPlotter plotter;
     ScanMatcher scan_matcher;
-    PointCloud init_scan;
+    SlamData init_data;
     PoseEstimator pose_estimator(scan_matcher);
     Pose2D cur_pose;
 
@@ -202,7 +228,7 @@ int pose_estimate_main(int argc, const char *argv[])
 
     char inifile[20];
     sprintf(inifile, "%s/pt_0000.txt", argv[2]);
-    init_scan.load_from_file(inifile);
+    init_data.load_from_file(inifile);
 
     int start = atoi(argv[3]);
     int end = atoi(argv[4]);
@@ -213,14 +239,14 @@ int pose_estimate_main(int argc, const char *argv[])
         printf("//  Index = %d (%fmm, %fmm, %fdeg)\n", i, cur_pose.x, cur_pose.y, to_degree(cur_pose.direction));
         printf("//-------------------------------------------------------\n");
         
-        PointCloud cur_scan;
+        SlamData slam_data;
         char cur_filename[20];
         sprintf(cur_filename, "%s/pt_%04d.txt", argv[2], i+1);
-        cur_scan.load_from_file(cur_filename);
-        cur_scan.analyse_points();
-        cur_pose = pose_estimator.estimate_position(&cur_scan);
+        slam_data.load_from_file(cur_filename);
+        slam_data.pc()->analyse_points();
+        cur_pose = pose_estimator.estimate_position(slam_data);
         
-        plotter.plot(cur_pose, &init_scan);
+        plotter.plot(cur_pose, init_data.pc());
     }
 
     printf("//-------------------------------------------------------\n");
@@ -243,7 +269,7 @@ int pose_estimate_main(int argc, const char *argv[])
  * @param argv 
  * @return int 
  */
-int scan_plot_main(int argc, const char *argv[])
+static int scan_plot_main(int argc, const char *argv[])
 {
     Lidar lidar;
     if (lidar.init() == false)
@@ -277,7 +303,7 @@ int scan_plot_main(int argc, const char *argv[])
  * @param argv 
  * @return int 
  */
-int remocon_main(int argc, const char *argv[])
+static int remocon_main(int argc, const char *argv[])
 {
     Motor motor;
     if (motor.init() == false)
@@ -299,20 +325,13 @@ int remocon_main(int argc, const char *argv[])
     return EXIT_SUCCESS;
 }
 
-struct argstr_func {
-    const char *string;
-    const int argnum;
-    int (*func)(int argc, const char *argv[]);
-};
-
-static const struct argstr_func main_func_table[] = {
-    { "save",           2,  save_main },
-    { "scan_plot",      1,  scan_plot_main },
-    { "remocon",        1,  remocon_main },
-    { "matching",       4,  scan_matching_main },
-    { "pose_estimate",  4,  pose_estimate_main },
-};
-static const int table_size = sizeof(main_func_table) / sizeof(argstr_func);
+static int usage_main(int argc, const char *argv[])
+{
+    for (int i=0; i<table_size; i++) {
+        printf("%02d %s %s\n", i, main_func_table[i].string, main_func_table[i].desc);
+    }
+    return EXIT_SUCCESS;
+}
 
 /**
  * @brief メイン関数

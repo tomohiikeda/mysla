@@ -1,14 +1,14 @@
 #pragma once
 
+#include "Common.hpp"
 #include "IOdometer.hpp"
-#include <stdio.h>
 
-class PulseCounter : public IOdometer{
+class PulseCounter : public IOdometer {
     public:
         bool init(void);
-        bool start(void);
-        void stop(void);
-        bool get_odometory(int16_t *od_l, int16_t *od_r);
+        void deinit(void);
+        bool get_odometory(odometory_t *odom);
+        bool get_odometory(int16_t *left, int16_t *right);
 
     protected:
         int fd[2];

@@ -9,16 +9,10 @@ PoseEstimator::PoseEstimator(ScanMatcher& scan_matcher):
     this->current_pose.direction = 0.0f;
 }
 
-Pose2D PoseEstimator::estimate_position(const struct estimate_data *est_data)
+Pose2D PoseEstimator::estimate_position(SlamData& slam_data)
 {
     //estimate_from_odometory(od_l, od_r);
-    estimate_from_scan(est_data->pc);
-    return this->current_pose;
-}
-
-Pose2D PoseEstimator::estimate_position(const PointCloud *pc)
-{
-    estimate_from_scan(pc);
+    estimate_from_scan(slam_data.pc());
     return this->current_pose;
 }
 

@@ -5,3 +5,9 @@
 #include <bits/stdc++.h>
 #include <pthread.h> 
 #include <cmath>
+#include <iostream>
+#include <string>
+#include <signal.h>
+#include <stdlib.h>
+#include <unistd.h>
+

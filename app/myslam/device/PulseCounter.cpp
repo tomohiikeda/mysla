@@ -27,12 +27,7 @@ err_0:
     return false;
 }
 
-bool PulseCounter::start(void)
-{
-    return true;
-}
-
-void PulseCounter::stop(void)
+void PulseCounter::deinit(void)
 {
     for (int i=0; i<2; i++) {
         if (this->fd[i]) {
@@ -42,7 +37,21 @@ void PulseCounter::stop(void)
     }
 }
 
-bool PulseCounter::get_odometory(int16_t *od_l, int16_t *od_r)
+bool PulseCounter::get_odometory(odometory_t *odom)
+{
+    int16_t left = 0;
+    int16_t right = 0;
+    
+    if (this->get_odometory(&left, &right) == false)
+        return false;
+
+    odom->left = left;
+    odom->right = right;
+    
+    return true;
+}    
+
+bool PulseCounter::get_odometory(int16_t *left, int16_t *right)
 {
     if (!fd[0] || !fd[1])
         return false;
@@ -51,8 +60,8 @@ bool PulseCounter::get_odometory(int16_t *od_l, int16_t *od_r)
     char buf_r[10] = {0};
     ssize_t rsize_l = read(this->fd[0], buf_l, sizeof(buf_l));
     ssize_t rsize_r = read(this->fd[1], buf_r, sizeof(buf_r));
-    *od_l = atoi(buf_l);
-    *od_r = atoi(buf_r);
+    *left = atoi(buf_l);
+    *right = atoi(buf_r);
 
     char cl[10] = {0};
     ssize_t wsize_l = write(this->fd[0], cl, sizeof(cl));
@@ -61,5 +70,4 @@ bool PulseCounter::get_odometory(int16_t *od_l, int16_t *od_r)
     fsync(this->fd[1]);
 
     return true;
-
 }    

@@ -29,9 +29,6 @@ bool Slam::start(Mode mode)
     if(sensor.start() == false)
         return false;
 
-    if(odometer.start() == false)
-        return false;
-
     if(plotter.open() == false)
         return false;
 
@@ -52,7 +49,7 @@ void Slam::stop(void)
     running = false;
     pthread_join(slam_thread, NULL);
     sensor.stop();
-    odometer.stop();
+    odometer.deinit();
     plotter.close();
 }
 

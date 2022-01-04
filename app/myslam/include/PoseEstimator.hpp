@@ -4,23 +4,13 @@
 #include "Pose2D.hpp"
 #include "ScanMatcher.hpp"
 #include "GlidMap.hpp"
-
-struct odometory {
-    int16_t left;
-    int16_t right;
-};
-
-struct estimate_data {
-    struct odometory odom;
-    PointCloud *pc;
-};
+#include "SlamData.hpp"
 
 class PoseEstimator{
     public:
         PoseEstimator(ScanMatcher& scan_matcher);
         virtual ~PoseEstimator(void){}
-        Pose2D estimate_position(const struct estimate_data *est_data);
-        Pose2D estimate_position(const PointCloud *pc);
+        Pose2D estimate_position(SlamData& slam_data);
 
     protected:
         ScanMatcher& scan_matcher;

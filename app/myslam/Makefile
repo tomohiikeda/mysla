@@ -32,6 +32,7 @@ CXXSRC += \
 		device/RemoteControl.cpp \
 		GnuplotPlotter.cpp \
 		Slam.cpp \
+		SlamData.cpp \
 		ScanMatcher.cpp \
 		PointCloud.cpp \
 		Util.cpp \
