@@ -31,31 +31,31 @@ LidarとPulse Counterのデータを取得し、ファイルに保存するモ�
 output/Linux/Release/myslam save <directory名> <Interval(sec)>
 ```
 
-* Scanモード
+* Scanモード  
 Lidarを起動し、取得データをGnuplotでリアルタイム表示します。
 ```
 output/Linux/Release/myslam scan_plot
 ```
 
-* ラジコンモード
+* ラジコンモード  
 DualShock4で操作することができるモードです。
 ```
 output/Linux/Release/myslam remocon
 ```
 
-* スキャンマッチングテストモード
+* スキャンマッチングテストモード  
 ScanMatchingのテストを行うモードです。指定されたディレクトリ内のSlamDataファイルが使用され、開始インデックスと最終インデックスの間でScan Matchingを連続的に実行します。
 ```
 output/Linux/Release/myslam matching <directory名> <開始インデックス> <最終インデックス>
 ```
 
-* 位置推定テストモード
+* 位置推定テストモード  
 PoseEstimatorのテストを行うモードです。パラメータはスキャンマッチングと同様。
 ```
 output/Linux/Release/myslam pose_estimate <directory名> <開始インデックス> <最終インデックス>
 ```
 
-* Usage
+* Usage  
 実装されているモード一覧を表示します。
 ```
 output/Linux/Release/myslam usage
