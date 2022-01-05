@@ -2,6 +2,12 @@
 #include "Util.hpp"
 #include <unistd.h>
 
+#ifdef debug_scan_matcher
+#define scan_matcher_debug(fmt, ...) printf(fmt, __VA_ARGS)
+#else
+#define scan_matcher_debug(fmt, ...)
+#endif
+
 void ScanMatcher::set_current_scan(const PointCloud *pc)
 {
     this->cur_scan = pc;
@@ -73,7 +79,7 @@ Pose2D ScanMatcher::do_scan_matching(double speed) const
     Pose2D total_dev(0,0,0);
 
     if (this->is_debug_mode()) {
-        this->debug_plotter->plot(this->ref_scan, this->cur_scan);
+        this->debug_plotter->plot(this->cur_scan, this->ref_scan);
         sleep(speed);
     }
 
@@ -84,13 +90,19 @@ Pose2D ScanMatcher::do_scan_matching(double speed) const
         associate_list.clear();
         this->data_associate(&temp_scan, this->ref_scan, associate_list);
 
+        // 移動後の表示
+        if (this->is_debug_mode()) {
+            plot_for_debug(&temp_scan, this->ref_scan, associate_list);
+            sleep(0.5 * speed);
+        }
+
+        //wait_for_key();
+
         // その対応付けでどのくらい遷移させれば最小コストになるか求める。
         dev = steepest_descent(&temp_scan, this->ref_scan, associate_list, cost_type);
 
         // 計算した分移動する。
         temp_scan.move(dev);
-
-
 
         // 移動後のコストを計算する
         pre_ev = ev;
@@ -107,17 +119,13 @@ Pose2D ScanMatcher::do_scan_matching(double speed) const
         }
         ev_history[0] = (ev - pre_ev);
 
-        // 移動後の表示
-        if (this->is_debug_mode()) {
-            plot_for_debug(&temp_scan, this->ref_scan, associate_list);
-            printf("[%d]dx=%f, dy=%f, dtheta=%f, cost_type=%d, ev=%f\n", iter, dev.x, dev.y, dev.direction, cost_type, ev);
-            sleep(0.5 * speed);
-        }
+        scan_matcher_debug("[%d]dx=%f, dy=%f, dtheta=%f, cost_type=%d, ev=%f\n",
+                            iter, dev.x, dev.y, dev.direction, cost_type, ev);
 
         // マッチングを終わらせるかチェック
         uint32_t done = is_matching_done(ev, pre_ev, ev_history, history_num, cost_type);
         if (done) {
-            printf("done reason=%d, iter=%d\n", done, iter);
+            scan_matcher_debug("done reason=%d, iter=%d\n", done, iter);
             break;
         }
     }
@@ -162,7 +170,7 @@ Pose2D ScanMatcher::steepest_descent(const PointCloud *scan,
                                      const enum cost_type cost_type) const
 {
     const double dd = 0.000001;
-    const double da = COST_SIMPLE ? 5 : 2.5;
+    const double da = 0.3;
     const double kk = (cost_type == COST_SIMPLE) ? 0.00000001 : 0.00000001;
     PointCloud temp_scan = *scan;
     double ev = this->cost_function(&temp_scan, ref_scan, associate_list, cost_type);
@@ -171,9 +179,10 @@ Pose2D ScanMatcher::steepest_descent(const PointCloud *scan,
     double pre_ev = 0;
     Pose2D min_mov(0,0,0);
     int min_idx = 0;
-    //printf("[0]ev=%f, (0, 0, 0)\n", ev);
+    
+    scan_matcher_debug("[0]ev=%f, (0, 0, 0)\n", ev);
 
-    for (int i=1; i<500 && std::abs(ev-pre_ev) > 0.01f; i++) {
+    for (int i=1; i<500 && std::abs(ev-pre_ev) > 0.001f; i++) {
 
         PointCloud dtheta_scan = temp_scan;
         PointCloud dx_scan = temp_scan;
@@ -194,7 +203,7 @@ Pose2D ScanMatcher::steepest_descent(const PointCloud *scan,
         pre_ev = ev;
         ev = this->cost_function(&temp_scan, ref_scan, associate_list, cost_type);
 
-        //printf("[%d]ev=%f, (%f, %f, %f)\n", i, ev, dx, dy, dtheta);
+        scan_matcher_debug("[%d]ev=%f, (%f, %f, %f)\n", i, ev, dx, dy, dtheta);
 
         // 評価値が跳ね上がった場合はそこで終わる
         if (ev - pre_ev > 5000)
@@ -211,7 +220,7 @@ Pose2D ScanMatcher::steepest_descent(const PointCloud *scan,
         }
 
     }
-    printf("[min]%d(%f, %f, %f)\n", min_idx, min_mov.x, min_mov.y, min_mov.direction);
+    scan_matcher_debug("[min]%d(%f, %f, %f)\n", min_idx, min_mov.x, min_mov.y, min_mov.direction);
     return min_mov;
 }
 
@@ -264,7 +273,7 @@ uint32_t ScanMatcher::find_nearest_index(const Point point, const PointCloud *pc
     for (size_t i=0; i<pc->size(); i++) {
         const Point ref_point = pc->at(i);
         double dist = point.distance_to(ref_point);
-        if (dist < min_dist && ref_point.type != PT_ISOLATE) {
+        if (dist < min_dist /*&& ref_point.type != PT_ISOLATE*/) {
             min_dist = dist;
             min_index = i;
         }
