@@ -223,24 +223,25 @@ static int pose_estimate_main(int argc, const char *argv[])
     PoseEstimator pose_estimator(scan_matcher);
     Pose2D cur_pose;
     GridMap grid_map;
+    PointCloud world_pc;
 
     if (plotter.open() == false)
         return EXIT_FAILURE;
 
-    char inifile[20];
-    sprintf(inifile, "%s/pt_0000.txt", argv[2]);
-    init_data.load_from_file(inifile);
-    grid_map.set_points(init_data.pc());
+    //char inifile[20];
+    //sprintf(inifile, "%s/pt_0000.txt", argv[2]);
+    //init_data.load_from_file(inifile);
+    //grid_map.set_points(init_data.pc());
 
     int start = atoi(argv[3]);
     int end = atoi(argv[4]);
 
     for (int i=start; i<=end; i++) {
-        
+
         printf("//-------------------------------------------------------\n");
         printf("//  Index = %d (%fmm, %fmm, %fdeg)\n", i, cur_pose.x, cur_pose.y, to_degree(cur_pose.direction));
         printf("//-------------------------------------------------------\n");
-        
+
         SlamData slam_data;
         char filename[50];
         sprintf(filename, "%s/pt_%04d.txt", argv[2], i);
@@ -248,8 +249,11 @@ static int pose_estimate_main(int argc, const char *argv[])
         slam_data.pc()->analyse_points();
         cur_pose = pose_estimator.estimate_position(slam_data);
         
+        slam_data.pc()->move(cur_pose);
+        grid_map.set_points(slam_data.pc());
+
         plotter.plot(cur_pose, grid_map);
-        sleep(0.5);
+        //sleep(0.5);
     }
 
     printf("//-------------------------------------------------------\n");
