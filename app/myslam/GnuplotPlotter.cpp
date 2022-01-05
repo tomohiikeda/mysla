@@ -120,6 +120,8 @@ void GnuplotPlotter::plot(const PointCloud *pc_0,
                 \"$%s\" with points pointtype 7 pointsize %f, \
                 \"$%s\" with linespoints pointtype 0\n",
             plotfile_0, this->POINT_SIZE, plotfile_1, this->POINT_SIZE, plotfile_2);
+
+    fflush(fd);
     return;
 }
 
