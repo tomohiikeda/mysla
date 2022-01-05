@@ -31,7 +31,7 @@ class GnuplotPlotter: public IPlotter{
         const int MAX_PLOT_X =  3000;
         const int MIN_PLOT_Y = -3000;
         const int MAX_PLOT_Y =  3000;
-        const double POINT_SIZE = 1.0f;
+        const double POINT_SIZE = 0.7f;
 
     private:
 };
