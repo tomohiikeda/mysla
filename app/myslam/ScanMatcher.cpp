@@ -2,8 +2,9 @@
 #include "Util.hpp"
 #include <unistd.h>
 
+#define debug_scan_matcher 
 #ifdef debug_scan_matcher
-#define scan_matcher_debug(fmt, ...) printf(fmt, __VA_ARGS)
+#define scan_matcher_debug(fmt, ...) printf(fmt, __VA_ARGS__)
 #else
 #define scan_matcher_debug(fmt, ...)
 #endif
@@ -30,7 +31,6 @@ uint32_t ScanMatcher::is_matching_done(
         uint32_t history_num,
         enum cost_type cost_type) const
 {
-    
     // 評価値がちょっとしか変化していない。
     if (std::abs(ev - pre_ev) < 1)
         return 1;
@@ -45,7 +45,7 @@ uint32_t ScanMatcher::is_matching_done(
 
     ave_ev /= history_num;
     
-    if (ev < 3000 && std::abs(ave_ev) < 100) {
+    if (ev < 3000 && std::abs(ave_ev) < 30) {
         //printf("ave_ev=%f\n", ave_ev);
         return 2;
     }
@@ -72,7 +72,7 @@ Pose2D ScanMatcher::do_scan_matching(double speed) const
     PointCloud temp_scan = *this->cur_scan;
     enum cost_type cost_type = ScanMatcher::COST_SIMPLE;
     double pre_ev = 0;
-    double ev = 0;
+    double ev = DBL_MAX;
     double ev_history[10] = {0.0f};
     uint32_t history_num = sizeof(ev_history) / sizeof(double);
     Pose2D dev;
@@ -128,6 +128,10 @@ Pose2D ScanMatcher::do_scan_matching(double speed) const
             scan_matcher_debug("done reason=%d, iter=%d\n", done, iter);
             break;
         }
+    }
+
+    if (this->is_debug_mode()) {
+        sleep(speed);
     }
 
     //printf("done iter=%d ev=%f\n", iter, ev);
@@ -233,7 +237,7 @@ Pose2D ScanMatcher::full_search(const PointCloud *scan,
                                 const std::vector<uint32_t>& associate_list) const
 {
     PointCloud temp_scan = *scan;
-    double min_cost = 9999999999;
+    double min_cost = DBL_MAX;
     double min_radian = 0;
 
     for (int i=0; i<1440; i++) {
@@ -268,7 +272,7 @@ void ScanMatcher::data_associate(const PointCloud *cur_scan,
  */
 uint32_t ScanMatcher::find_nearest_index(const Point point, const PointCloud *pc) const
 {
-    double min_dist = 999999999;
+    double min_dist = DBL_MAX;
     uint32_t min_index = 0;
     for (size_t i=0; i<pc->size(); i++) {
         const Point ref_point = pc->at(i);
@@ -289,6 +293,10 @@ double ScanMatcher::simple_distance(const PointCloud *cur_scan,
     for (size_t i = 0; i < associate_list.size(); i++) {
         Point cur_point = cur_scan->at(i);
         Point ref_point = ref_scan->at(associate_list.at(i));
+
+        if (cur_point.type == PT_ISOLATE || ref_point.type == PT_ISOLATE)
+            continue;
+
         double dist = cur_point.distance_to(ref_point);
         if (dist < 1000) {
             dist_sum += dist;
