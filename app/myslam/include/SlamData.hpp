@@ -11,7 +11,7 @@ class SlamData {
         PointCloud *pc(void);
         odometory_t *odometory(void);
         void save_to_file(const char *filename) const;
-        void load_from_file(const char *filename);
+        bool load_from_file(const char *filename);
         void print(void) const;
 
     protected:

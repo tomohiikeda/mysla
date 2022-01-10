@@ -25,18 +25,18 @@ void SlamData::save_to_file(const char *filename) const
     ofs.close();
 }
 
-void SlamData::load_from_file(const char *filename)
+bool SlamData::load_from_file(const char *filename)
 {
     std::stringstream ss;
     std::string x, y, line;
     std::ifstream ifs(filename);
     
-    if (!ifs)
-        return;
+    if (!ifs || ifs.fail())
+        return false;
 
     // 1行目はodometory
     if (!getline(ifs, line))
-        return;
+        return false;
 
     ss << line;
     getline(ss, x, ' ');
@@ -54,10 +54,12 @@ void SlamData::load_from_file(const char *filename)
         this->point_cloud.add(p);
     }
     ifs.close();
+    return true;
 }
 
 void SlamData::print(void) const
 {
     printf("odometory %d %d\n", this->odom.left, this->odom.right);
+    printf("point size = %d\n", this->point_cloud.size());
     this->point_cloud.debug_print();
 }

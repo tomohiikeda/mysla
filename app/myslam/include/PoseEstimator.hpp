@@ -10,7 +10,7 @@ class PoseEstimator{
     public:
         PoseEstimator(ScanMatcher& scan_matcher);
         virtual ~PoseEstimator(void){}
-        Pose2D estimate_position(SlamData& slam_data);
+        Pose2D estimate_position(SlamData& slam_data, const GridMap& world_map);
 
     protected:
         ScanMatcher& scan_matcher;

@@ -9,7 +9,7 @@ PoseEstimator::PoseEstimator(ScanMatcher& scan_matcher):
     this->current_pose.direction = 0.0f;
 }
 
-Pose2D PoseEstimator::estimate_position(SlamData& slam_data)
+Pose2D PoseEstimator::estimate_position(SlamData& slam_data, const GridMap& world_map)
 {
     estimate_from_odometory(*slam_data.odometory());
     estimate_from_scan(slam_data.pc());

@@ -1,51 +1,28 @@
 #pragma once
 
-#include "ISensor.hpp"
-#include "IOdometer.hpp"
 #include "IPlotter.hpp"
-#include "Pose2D.hpp"
-#include "PointCloud.hpp"
-#include "GridMap.hpp"
+#include "SlamData.hpp"
+#include "DataRetriever.hpp"
+
 class Slam {
     public:
-        typedef enum {
-            slam_mode,
-            save_mode,
-        } Mode;
 
-        Slam(ISensor& sensor, IOdometer& odometer, IPlotter& plotter):
-            sensor(sensor),
-            odometer(odometer),
-            plotter(plotter){
+        Slam(IPlotter& plotter, DataRetriever& retriever):
+            plotter(plotter),
+            retriever(retriever) {
             running = false;
         }
+
         bool init(void);
-        bool start(Slam::Mode mode);
+        bool start(void);
         void stop(void);
 
     protected:
-        ISensor& sensor;
-        IOdometer& odometer;
         IPlotter& plotter;
+        DataRetriever& retriever;
+
         bool running;
         pthread_t slam_thread;
-        Pose2D cur_pose;
-        PointCloud world_map;
-        GridMap grid_map;
-
-        void update_world_map(const PointCloud *cur_pc);
-        void estimate_cur_pose(const PointCloud *cur_pc);
-        double calculate_cost(const PointCloud *cur_pc) const;
-        void wait_for_key(void) const;
-        Pose2D calc_deviation_from_world(const PointCloud *pc) const;
-        void grow_world_map(const PointCloud *cur_pc);
         void process_loop(void);
-
-        
-        inline double to_radian(double degree) const {
-            return degree * M_PI / 180;
-        }
-
         static void *thread_entry(void *arg);
-
 };

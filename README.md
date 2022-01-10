@@ -11,6 +11,15 @@ SLAMを自分で作ってみようというプロジェクト。HWはアール�
 * ドライバ: 
 * コントローラ: 
 
+### 準備
+
+#### ドライバインストール
+sudo insmod RaspberryPiMouse/src/drivers/rtmouse.ko
+chmod 777 /dev/rt*
+
+#### DualShock4のペアリング
+/dev/input/js0 が見えているか確認する。
+
 ### ビルド方法
 ```
 cd mysla  
@@ -22,7 +31,7 @@ make
 * SLAM実行モード  
 SLAMを実行するモードです。
 ```
-output/Linux/Release/myslam
+output/Linux/Release/myslam slam <offline or online> <ディレクトリ名> <開始インデックス> <最終インデックス>
 ```
 
 * SlamData保存モード  
@@ -47,12 +56,6 @@ output/Linux/Release/myslam remocon
 ScanMatchingのテストを行うモードです。指定されたディレクトリ内のSlamDataファイルが使用され、開始インデックスと最終インデックスの間でScan Matchingを連続的に実行します。
 ```
 output/Linux/Release/myslam matching <directory名> <開始インデックス> <最終インデックス>
-```
-
-* 位置推定テストモード  
-PoseEstimatorのテストを行うモードです。パラメータはスキャンマッチングと同様。
-```
-output/Linux/Release/myslam pose_estimate <directory名> <開始インデックス> <最終インデックス>
 ```
 
 * Usage  
