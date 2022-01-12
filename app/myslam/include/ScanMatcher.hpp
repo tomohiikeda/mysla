@@ -6,9 +6,7 @@
 
 class ScanMatcher {
     public:
-        ScanMatcher(IPlotter *debug_plotter=nullptr){
-            this->debug_plotter = debug_plotter;
-        };
+        ScanMatcher(IPlotter& debug_plotter, bool debug): debug_plotter(debug_plotter), debug_mode(debug) {};
         virtual ~ScanMatcher(void){};
         void set_current_scan(const PointCloud *pc);
         void set_reference_scan(const PointCloud *pc);
@@ -20,9 +18,10 @@ class ScanMatcher {
             COST_SIMPLE,
             COST_VERTICAL,
         };
-        const IPlotter *debug_plotter;
+        const IPlotter& debug_plotter;
         const PointCloud *cur_scan;
         const PointCloud *ref_scan;
+        bool debug_mode = false;
         double differential(const PointCloud *scan,
                             const PointCloud *ref_scan,
                             const std::vector<uint32_t>& associate_list,
@@ -60,6 +59,6 @@ class ScanMatcher {
         void plot_for_debug(const PointCloud *cur_scan,
                             const PointCloud *ref_scan,
                             const std::vector<uint32_t>& associate_list) const;
-        bool is_debug_mode(void) const { return debug_plotter ? true: false; }
+        bool is_debug_mode(void) const { return debug_mode; }
 
 };

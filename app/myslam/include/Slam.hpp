@@ -16,11 +16,15 @@ class Slam {
         bool init(void);
         bool start(void);
         void stop(void);
+        void debug_on(void) {
+            this->debug = true;
+        }
 
     protected:
         IPlotter& plotter;
         DataRetriever& retriever;
 
+        bool debug = false;
         bool running;
         pthread_t slam_thread;
         void process_loop(void);

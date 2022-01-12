@@ -28,6 +28,7 @@ struct argstr_func {
 
 static const struct argstr_func main_func_table[] = {
     { "slam",           5,  slam_main,          "slam"},
+    { "slam_debug",     5,  slam_main,          "slam"},
     { "save",           3,  save_main,          "save slam data"},
     { "scan_plot",      1,  scan_plot_main,     "scan" },
     { "remocon",        1,  remocon_main,       "remocon" },
@@ -50,6 +51,7 @@ static void ctrlc(int)
  * @brief SLAM実行モード
  * 
  * @param argc 
+ * @param argv[1] "slam" or "slam_debug"
  * @param argv[2] mode "offline" or "online"
  * @param argv[3] ディレクトリ名
  * @param argv[4] 開始インデックス "-"にすると0
@@ -67,6 +69,9 @@ static int slam_main(int argc, const char *argv[])
 
     GnuplotPlotter plotter;
     Slam *slam = new Slam(plotter, retriever);
+
+    if (!strncmp(argv[1], "slam_debug", 10))
+        slam->debug_on();
 
     Motor motor;
     RemoteControl remocon(motor);
@@ -164,7 +169,7 @@ static int save_main(int argc, const char *argv[])
 static int scan_matching_main(int argc, const char *argv[])
 {
     GnuplotPlotter plotter;
-    ScanMatcher scan_matcher(&plotter);
+    ScanMatcher scan_matcher(plotter, true);
 
     if (plotter.open() == false)
         return EXIT_FAILURE;

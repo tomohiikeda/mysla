@@ -56,7 +56,7 @@ void Slam::stop(void)
  */
 void Slam::process_loop(void)
 {
-    ScanMatcher scan_matcher(NULL);
+    ScanMatcher scan_matcher(this->plotter, this->debug);
     PoseEstimator pose_estimator(scan_matcher);
     uint32_t loop_num = 0;
     Pose2D cur_pose(0, 0, 0);
@@ -86,7 +86,8 @@ void Slam::process_loop(void)
         world_grid_map.set_points(slam_data.pc());
 
         // 現在位置とワールドマップを表示する。
-        plotter.plot(cur_pose, world_grid_map);
+        if (!this->debug)
+            plotter.plot(cur_pose, world_grid_map);
 
         loop_num++;
 

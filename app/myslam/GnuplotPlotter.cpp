@@ -36,7 +36,7 @@ void GnuplotPlotter::plot(const Pose2D pose) const
 {
     if (fd == NULL)
         return;
-    
+
     fprintf(fd, "$pose << EOD\n");
     fprintf(fd, "%f %f\n", pose.x, pose.y);
     fprintf(fd, "EOD\n");
@@ -68,6 +68,7 @@ void GnuplotPlotter::plot(const PointCloud *pc) const
     this->input_points(pc, data_var);
 
     fprintf(fd, "plot \"$%s\" with points pointtype 7 pointsize %f\n", data_var, this->POINT_SIZE);
+    fflush(fd);
     return;
 }
 
@@ -153,13 +154,13 @@ void GnuplotPlotter::input_pose(const Pose2D pose, const char *data_var) const
 {
     const double L = 100.0f;
     fprintf(fd, "$%s << EOD\n", data_var);
-    fprintf(fd, "%f %f\n", pose.x - L * sin(pose.direction), 
+    fprintf(fd, "%f %f\n", pose.x - L * sin(pose.direction),
                            pose.y + L * cos(pose.direction));
-    fprintf(fd, "%f %f\n", pose.x - (L / 3) * cos(pose.direction), 
+    fprintf(fd, "%f %f\n", pose.x - (L / 3) * cos(pose.direction),
                            pose.y - (L / 3) * sin(pose.direction));
-    fprintf(fd, "%f %f\n", pose.x + (L / 3) * cos(pose.direction), 
+    fprintf(fd, "%f %f\n", pose.x + (L / 3) * cos(pose.direction),
                            pose.y + (L / 3) * sin(pose.direction));
-    fprintf(fd, "%f %f\n", pose.x - L * sin(pose.direction), 
+    fprintf(fd, "%f %f\n", pose.x - L * sin(pose.direction),
                            pose.y + L * cos(pose.direction));
     fprintf(fd, "EOD\n");
 }
@@ -180,6 +181,10 @@ void GnuplotPlotter::input_associates(const PointCloud *cur_pc, const PointCloud
     for (size_t i = 0; i < associate_list.size(); i++) {
         Point cur_point = cur_pc->at(i);
         Point ref_point = ref_pc->at(associate_list.at(i));
+
+        //if (cur_point.type == PT_ISOLATE || ref_point.type == PT_ISOLATE)
+        //   continue;
+
         fprintf(fd, "%f %f\n", cur_point.x, cur_point.y);
         fprintf(fd, "%f %f\n", ref_point.x, ref_point.y);
         fprintf(fd, "\n");
