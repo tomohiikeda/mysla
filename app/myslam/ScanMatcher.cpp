@@ -2,7 +2,7 @@
 #include "Util.hpp"
 #include <unistd.h>
 
-#define debug_scan_matcher 
+//#define debug_scan_matcher
 #ifdef debug_scan_matcher
 #define scan_matcher_debug(fmt, ...) printf(fmt, __VA_ARGS__)
 #else
@@ -44,7 +44,7 @@ uint32_t ScanMatcher::is_matching_done(
     }
 
     ave_ev /= history_num;
-    
+
     if (ev < 3000 && std::abs(ave_ev) < 30) {
         //printf("ave_ev=%f\n", ave_ev);
         return 2;
@@ -152,12 +152,12 @@ double ScanMatcher::differential(const PointCloud *scan,
 
 /**
  * @brief 最急降下法によりscanとref_scanのズレを検出する
- * 
+ *
  * @param scan 現在スキャン
  * @param ref_scan 参照スキャン
  * @param associate_list 点の対応付けリスト
  * @param cost_type コストをどのタイプで計算するか
- * @return Pose2D 
+ * @return Pose2D
  */
 Pose2D ScanMatcher::steepest_descent(const PointCloud *scan,
                                      const PointCloud *ref_scan,
@@ -174,7 +174,7 @@ Pose2D ScanMatcher::steepest_descent(const PointCloud *scan,
     double pre_ev = 0;
     Pose2D min_mov(0,0,0);
     int min_idx = 0;
-    
+
     scan_matcher_debug("[0]ev=%f, (0, 0, 0)\n", ev);
 
     for (int i=1; i<500 && std::abs(ev-pre_ev) > 0.001f; i++) {
@@ -306,7 +306,7 @@ double ScanMatcher::vertical_distance(const PointCloud *cur_scan,
         Point cur_point = cur_scan->at(i);
         Point ref_point = ref_scan->at(associate_list.at(i));
         double dist = cur_point.vertical_distance_to(ref_point);
-        
+
         if (dist < 100) {
             dist_sum += dist;
             nn++;
@@ -323,7 +323,9 @@ double ScanMatcher::cost_function(const PointCloud *cur_scan,
                                   const std::vector<uint32_t>& associate_list,
                                   const enum cost_type cost_type) const
 {
-    if (cost_type == COST_SIMPLE)
+    if (ref_scan->size() == 0)
+        return 0.0f;
+    else if (cost_type == COST_SIMPLE)
         return simple_distance(cur_scan, ref_scan, associate_list);
     else
         return vertical_distance(cur_scan, ref_scan, associate_list);

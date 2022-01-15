@@ -178,17 +178,24 @@ void GnuplotPlotter::input_associates(const PointCloud *cur_pc, const PointCloud
             const std::vector<uint32_t>& associate_list, const char *data_var) const
 {
     fprintf(fd, "$%s << EOD\n", data_var);
+
     for (size_t i = 0; i < associate_list.size(); i++) {
+
         Point cur_point = cur_pc->at(i);
-        Point ref_point = ref_pc->at(associate_list.at(i));
+        fprintf(fd, "%f %f\n", cur_point.x, cur_point.y);
+
+        Point ref_point;
+        if (ref_pc->size() > associate_list.at(i)) {
+            ref_point = ref_pc->at(associate_list.at(i));
+            fprintf(fd, "%f %f\n", ref_point.x, ref_point.y);
+        }
 
         //if (cur_point.type == PT_ISOLATE || ref_point.type == PT_ISOLATE)
         //   continue;
 
-        fprintf(fd, "%f %f\n", cur_point.x, cur_point.y);
-        fprintf(fd, "%f %f\n", ref_point.x, ref_point.y);
         fprintf(fd, "\n");
     }
+
     fprintf(fd, "EOD\n");
 }
 
