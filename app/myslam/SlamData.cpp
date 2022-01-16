@@ -61,5 +61,5 @@ void SlamData::print(void) const
 {
     printf("odometory %d %d\n", this->odom.left, this->odom.right);
     printf("point size = %d\n", this->point_cloud.size());
-    this->point_cloud.debug_print();
+    this->point_cloud.print();
 }

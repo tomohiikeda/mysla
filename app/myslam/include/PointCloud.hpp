@@ -25,7 +25,7 @@ class PointCloud{
         void save_to_file(const char *filename) const;
         void load_from_file(const char *filename);
         void analyse_points(void);
-        void debug_print(void) const;
+        void print(void) const;
 
     protected:
         std::vector<Point> points;

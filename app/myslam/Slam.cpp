@@ -6,6 +6,7 @@
 #include "Slam.hpp"
 #include "PoseEstimator.hpp"
 #include "GnuplotPlotter.hpp"
+#include "GridMap.hpp"
 
 /**
  * @brief SLAM初期化
@@ -60,7 +61,7 @@ void Slam::process_loop(void)
     PoseEstimator pose_estimator(scan_matcher);
     uint32_t loop_num = 0;
     Pose2D cur_pose(0, 0, 0);
-    GridMap world_grid_map;
+    GridMap *world_grid_map = new GridMap();
 
     this->running = true;
 
@@ -79,15 +80,15 @@ void Slam::process_loop(void)
             break;
 
         // 最新SlamDataとワールドマップから現在位置を推定する。
-        cur_pose = pose_estimator.estimate_position(slam_data, world_grid_map);
+        cur_pose = pose_estimator.estimate_position(slam_data, *world_grid_map);
 
         // ワールドマップを更新する。
         slam_data.pc()->move(cur_pose);
-        world_grid_map.set_points(slam_data.pc());
+        world_grid_map->set_points(slam_data.pc());
 
         // 現在位置とワールドマップを表示する。
         if (!this->debug)
-            plotter.plot(cur_pose, world_grid_map);
+            plotter.plot(cur_pose, *world_grid_map);
 
         loop_num++;
 
@@ -95,6 +96,7 @@ void Slam::process_loop(void)
         //wait_for_key();
     }
 
+    delete world_grid_map;
     return;
 }
 

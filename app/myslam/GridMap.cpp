@@ -1,16 +1,42 @@
-#include "Common.hpp"
 #include "GridMap.hpp"
 
-/**
- * @brief コンストラクタ
- */
-GridMap::GridMap(void)
+void Grid::set(const Point p)
 {
-    for (int x=0; x<this->map_size_x; x++) {
-        for (int y=0; y<this->map_size_y; y++) {
-            grid_map[x][y] = 0;
-        }
-    }
+    uint32_t num = this->point_num;
+
+    this->represent.x
+    = this->represent.x * ((double)num / (num + 1)) + p.x * (1.0f / (num + 1));
+
+    this->represent.y
+    = this->represent.y * ((double)num / (num + 1)) + p.y * (1.0f / (num + 1));
+
+    this->point_num++;
+}
+
+Point Grid::get(void) const
+{
+    return this->represent;
+}
+
+bool Grid::is_valid(void) const
+{
+    return (this->point_num) ? true : false;
+}
+
+int32_t GridMap::to_index_x(const double world_x) const
+{
+    if (world_x < GridMap::map_min_x || GridMap::map_max_x <= world_x)
+        return -1;
+    else
+        return (world_x - map_min_x) / Grid::width;
+}
+
+int32_t GridMap::to_index_y(const double world_y) const
+{
+    if (world_y < GridMap::map_min_y || GridMap::map_max_y <= world_y)
+        return -1;
+    else
+        return (world_y - map_min_y) / Grid::height;
 }
 
 /**
@@ -19,40 +45,30 @@ GridMap::GridMap(void)
  */
 void GridMap::set_points(const PointCloud *world_pc)
 {
-
-    for (int x=0; x<map_size_x; x++) {
-        for (int y=0; y<map_size_y; y++) {
-            if (this->grid_map[x][y])
-                this->grid_map[x][y]--;
-        }
-    }
-
     for (size_t i=0; i<world_pc->size(); i++) {
 
         //if (world_pc->at(i).type == PT_ISOLATE)
         //    continue;
 
-        uint32_t x_index = (world_pc->at(i).x - map_min_x) / grid_per;
-        uint32_t y_index = (world_pc->at(i).y - map_min_y) / grid_per;
-        if (1 <= x_index && x_index < map_size_x-1) {
-            if (1 <= y_index && y_index < map_size_y-1) {
-                this->grid_map[x_index][y_index] = 50;
-            }
-        }
+        Point p = world_pc->at(i);
+        int32_t index_x = to_index_x(p.x);
+        int32_t index_y = to_index_x(p.y);
+
+        if (index_x == -1 || index_y == -1)
+            return;
+
+        this->grid_map[index_x][index_y].set(p);
     }
 }
 
 void GridMap::to_point_cloud(PointCloud *to_pc) const
 {
-    Point p(0, 0);
-    for (int x=0; x<map_size_x; x++) {
-        for (int y=0; y<map_size_y; y++) {
-            if (this->grid_map[x][y]) {
-                p.x = (double)x * grid_per + map_min_x + (grid_per / 2);
-                p.y = (double)y * grid_per + map_min_y + (grid_per / 2);
+    for (uint32_t x=0; x<max_grid_index_x; x++) {
+        for (uint32_t y=0; y<max_grid_index_y; y++) {
+            if (this->grid_map[x][y].is_valid()) {
+                Point p = this->grid_map[x][y].get();
                 to_pc->add(p);
             }
         }
     }
-    return;
 }

@@ -34,6 +34,7 @@ CXXSRC += \
 		Slam.cpp \
 		SlamData.cpp \
 		ScanMatcher.cpp \
+		Point.cpp \
 		PointCloud.cpp \
 		Util.cpp \
 		PoseEstimator.cpp \

@@ -35,7 +35,7 @@ static const struct argstr_func main_func_table[] = {
     { "matching",       4,  scan_matching_main, "scan matching" },
     { "usage",          1,  usage_main,         "usage" },
 };
-static const int table_size = sizeof(main_func_table) / sizeof(argstr_func);
+static constexpr int table_size = sizeof(main_func_table) / sizeof(argstr_func);
 
 /**
  * @brief Ctrl+Cを押されたときのハンドラ

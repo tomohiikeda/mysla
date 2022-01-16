@@ -155,7 +155,7 @@ bool PointCloud::calculate_normal(Vector2D& normal, int idx, const Point& pt, in
     return false;
 }
 
-void PointCloud::debug_print(void) const
+void PointCloud::print(void) const
 {
     for (size_t i=0; i<points.size(); i++) {
         Point pt = points.at(i);
