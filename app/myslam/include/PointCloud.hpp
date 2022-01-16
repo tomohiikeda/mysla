@@ -25,6 +25,7 @@ class PointCloud{
         void save_to_file(const char *filename) const;
         void load_from_file(const char *filename);
         void analyse_points(void);
+        void trim(double min_x, double max_x, double min_y, double max_y);
         void print(void) const;
 
     protected:

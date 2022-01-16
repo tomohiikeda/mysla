@@ -79,6 +79,8 @@ void Slam::process_loop(void)
         if (retriever.retrieve(slam_data) == false)
             break;
 
+        slam_data.pc()->trim(-1000, 1000, -1000, 1000);
+
         // 最新SlamDataとワールドマップから現在位置を推定する。
         cur_pose = pose_estimator.estimate_position(slam_data, *world_grid_map);
 

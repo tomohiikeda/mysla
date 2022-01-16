@@ -32,7 +32,7 @@ bool DataRetriever::retrieve(SlamData& slam_data)
 {
     if (this->mode == DataRetriever::offline_mode)
         return retrieve_offline(slam_data);
-    else if (this->mode == DataRetriever::online_mode)
+    else
         return retrieve_online(slam_data);
 }
 

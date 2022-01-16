@@ -102,10 +102,10 @@ void PointCloud::load_from_file(const char *filename)
 void PointCloud::analyse_points(void)
 {
     for (size_t i=0; i<points.size(); i++) {
-        
+
         Point& pt = points.at(i);
         Vector2D nl, nr;
-        
+
         bool flag_nl = this->calculate_normal(nl, i, pt, -1);
         bool flag_nr = this->calculate_normal(nr, i, pt, 1);
         nr.x = -nr.x;
@@ -132,6 +132,21 @@ void PointCloud::analyse_points(void)
             pt.type = PT_ISOLATE;
         }
     }
+}
+
+void PointCloud::trim(double min_x, double max_x, double min_y, double max_y)
+{
+    std::vector<Point>::iterator it = this->points.begin();
+
+    while (it != this->points.end()) {
+        Point p = *it;
+        if (p.x < min_x || max_x <= p.x || p.y < min_y || max_y <= p.y)
+            it = this->points.erase(it);
+        else
+            it++;
+    }
+
+    this->points.shrink_to_fit();
 }
 
 bool PointCloud::calculate_normal(Vector2D& normal, int idx, const Point& pt, int dir)

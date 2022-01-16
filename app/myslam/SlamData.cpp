@@ -19,7 +19,7 @@ void SlamData::save_to_file(const char *filename) const
 {
     std::ofstream ofs(filename);
     ofs << this->odom.left << " " << this->odom.right << std::endl;
-    for (size_t i=0; i<this->point_cloud.size(); i++){
+    for (size_t i=0; i<this->point_cloud.size(); i++) {
         ofs << this->point_cloud.at(i).x << " " << this->point_cloud.at(i).y << std::endl;
     }
     ofs.close();

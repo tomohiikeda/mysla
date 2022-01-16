@@ -38,16 +38,22 @@ Pose2D PoseEstimator::estimate_from_scan(const PointCloud *cur_pc, const GridMap
 {
     Pose2D movement;
     PointCloud pc, ref_scan;
+    double min_x = this->current_pose.x - 1000;
+    double max_x = this->current_pose.x + 1000;
+    double min_y = this->current_pose.y - 1000;
+    double max_y = this->current_pose.y + 1000;
 
     // 初回は前回スキャンが無いので計算を無視
     if (this->pre_pc.size() == 0)
         goto out;
 
     cur_pc->copy_to(pc);
+    //pc.trim(min_x, max_x, min_y, max_y);
     pc.move(current_pose);
 
     // 世界地図から参照スキャンを抽出
     world_map.to_point_cloud(&ref_scan);
+    ref_scan.trim(min_x, max_x, min_y, max_y);
     ref_scan.analyse_points();
     movement = scan_matcher.do_scan_matching(&pc, &ref_scan, 1.0f);
 
