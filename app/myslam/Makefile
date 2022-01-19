@@ -39,7 +39,8 @@ CXXSRC += \
 		Util.cpp \
 		PoseEstimator.cpp \
 		GridMap.cpp \
-		DataRetriever.cpp
+		DataRetriever.cpp \
+		Pose2D.cpp
 		
 C_INCLUDES += -I$(CURDIR)/../../sdk/include -I$(CURDIR)/../../sdk/src -I$(CURDIR)/include
 

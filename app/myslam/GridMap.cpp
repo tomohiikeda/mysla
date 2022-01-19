@@ -1,5 +1,12 @@
 #include "GridMap.hpp"
 
+void Grid::init(const double x, const double y, const uint32_t num)
+{
+    this->represent.x = x;
+    this->represent.y = y;
+    this->point_num = num;
+}
+
 void Grid::set(const Point p)
 {
     uint32_t num = this->point_num;
@@ -21,6 +28,14 @@ Point Grid::get(void) const
 bool Grid::is_valid(void) const
 {
     return (this->point_num) ? true : false;
+}
+
+std::string Grid::to_string(void) const
+{
+    std::string str = std::to_string(represent.x) + " " +
+                      std::to_string(represent.y) + " " +
+                      std::to_string(point_num);
+    return str;
 }
 
 int32_t GridMap::to_index_x(const double world_x) const
@@ -71,4 +86,42 @@ void GridMap::to_point_cloud(PointCloud *to_pc) const
             }
         }
     }
+}
+
+void GridMap::save_to_file(const std::string filename) const
+{
+    std::ofstream ofs(filename);
+    if (!ofs)
+        return;
+
+    for (uint32_t y=0; y<max_grid_index_y; y++) {
+        for (uint32_t x=0; x<max_grid_index_x; x++) {
+            Grid g = grid_map[x][y];
+            ofs << g.to_string() << std::endl;
+        }
+    }
+    ofs.close();
+}
+
+void GridMap::load_from_file(const std::string filename)
+{
+    std::ifstream ifs(filename);
+    if (!ifs)
+        return;
+
+    for (uint32_t y=0; y<max_grid_index_y; y++) {
+        for (uint32_t x=0; x<max_grid_index_x; x++) {
+            std::string line;
+            std::stringstream ss;
+            std::string str_x, str_y, str_n;
+            getline(ifs, line);
+            ss << line;
+            getline(ss, str_x, ' ');
+            getline(ss, str_y, ' ');
+            getline(ss, str_n, ' ');
+            grid_map[x][y].init(stod(str_x), stod(str_y), (uint32_t)stoi(str_n));
+        }
+    }
+
+    ifs.close();
 }

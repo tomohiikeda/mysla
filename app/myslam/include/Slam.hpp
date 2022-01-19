@@ -28,5 +28,7 @@ class Slam {
         bool running;
         pthread_t slam_thread;
         void process_loop(void);
+        void load_from_file(const std::string filename, Pose2D& pose, GridMap& map) const;
+        void save_to_file(const std::string filename, const Pose2D& pose, const GridMap& map) const;
         static void *thread_entry(void *arg);
 };

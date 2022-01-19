@@ -4,62 +4,64 @@
 PoseEstimator::PoseEstimator(ScanMatcher& scan_matcher):
     scan_matcher(scan_matcher)
 {
-    this->current_pose.x = 0.0f;
-    this->current_pose.y = 0.0f;
-    this->current_pose.direction = to_radian(0);
 }
 
-Pose2D PoseEstimator::estimate_position(SlamData& slam_data, const GridMap& world_map)
+Pose2D PoseEstimator::estimate_position(const Pose2D cur_pose, SlamData& slam_data, const GridMap& world_map) const
 {
-    estimate_from_odometory(*slam_data.odometory());
-    estimate_from_scan(slam_data.pc(), world_map);
-    return this->current_pose;
+    Pose2D pose;
+    pose = estimate_from_odometory(cur_pose, *slam_data.odometory());
+    pose = estimate_from_scan(pose, slam_data.pc(), world_map);
+    return pose;
 }
 
-Pose2D PoseEstimator::estimate_from_odometory(const odometory_t odom)
+Pose2D PoseEstimator::estimate_from_odometory(const Pose2D cur_pose, const odometory_t odom) const
 {
+    Pose2D pose = cur_pose;
     double delta_L_l = (2 * M_PI * WHEEL_RADIUS * odom.left) / PULSE_COUNT_PER_CYCLE;
     double delta_L_r = (2 * M_PI * WHEEL_RADIUS * odom.right) / PULSE_COUNT_PER_CYCLE;
     double delta_L = (delta_L_r + delta_L_l) / 2;
 
     // 世界座標系の移動量
     double dtheta = (delta_L_r  - delta_L_l) / WHEEL_BASE;
-    double dx = -delta_L * sin(current_pose.direction + dtheta / 2);
-    double dy = delta_L * cos(current_pose.direction + dtheta / 2);
+    double dx = -delta_L * sin(cur_pose.direction + dtheta / 2);
+    double dy = delta_L * cos(cur_pose.direction + dtheta / 2);
 
-    current_pose.x += dx;
-    current_pose.y += dy;
-    current_pose.direction += dtheta;
+    pose.x += dx;
+    pose.y += dy;
+    pose.direction += dtheta;
 
-    return current_pose;
+    pose.print();
+
+    return pose;
 }
 
-Pose2D PoseEstimator::estimate_from_scan(const PointCloud *cur_pc, const GridMap& world_map)
+Pose2D PoseEstimator::estimate_from_scan(const Pose2D cur_pose, const PointCloud *cur_pc, const GridMap& world_map) const
 {
     Pose2D movement;
+    Pose2D pose = cur_pose;
     PointCloud pc, ref_scan;
-    double min_x = this->current_pose.x - 1000;
-    double max_x = this->current_pose.x + 1000;
-    double min_y = this->current_pose.y - 1000;
-    double max_y = this->current_pose.y + 1000;
+    double min_x = cur_pose.x - 1500;
+    double max_x = cur_pose.x + 1500;
+    double min_y = cur_pose.y - 1500;
+    double max_y = cur_pose.y + 1500;
+
+    world_map.to_point_cloud(&ref_scan);
 
     // 初回は前回スキャンが無いので計算を無視
-    if (this->pre_pc.size() == 0)
+    if (ref_scan.size() == 0)
         goto out;
 
     cur_pc->copy_to(pc);
     //pc.trim(min_x, max_x, min_y, max_y);
-    pc.move(current_pose);
+    pc.move(pose);
 
-    // 世界地図から参照スキャンを抽出
-    world_map.to_point_cloud(&ref_scan);
-    ref_scan.trim(min_x, max_x, min_y, max_y);
+    //ref_scan.trim(min_x, max_x, min_y, max_y);
     ref_scan.analyse_points();
     movement = scan_matcher.do_scan_matching(&pc, &ref_scan, 1.0f);
 
-    current_pose.move_to(movement);
+    pose.move_to(movement);
 
 out:
-    cur_pc->copy_to(this->pre_pc);
-    return current_pose;
+    pose.print();
+    return pose;
 }

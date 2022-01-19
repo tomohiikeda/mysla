@@ -6,6 +6,7 @@
 #include <pthread.h> 
 #include <cmath>
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <signal.h>
 #include <stdlib.h>
