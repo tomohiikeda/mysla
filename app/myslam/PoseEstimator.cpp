@@ -8,8 +8,8 @@ PoseEstimator::PoseEstimator(ScanMatcher& scan_matcher):
 
 Pose2D PoseEstimator::estimate_position(const Pose2D cur_pose, SlamData& slam_data, const GridMap& world_map) const
 {
-    Pose2D pose;
-    pose = estimate_from_odometory(cur_pose, *slam_data.odometory());
+    Pose2D pose = cur_pose;
+    pose = estimate_from_odometory(pose, *slam_data.odometory());
     pose = estimate_from_scan(pose, slam_data.pc(), world_map);
     return pose;
 }
