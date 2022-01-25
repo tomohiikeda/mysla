@@ -37,7 +37,7 @@ Pose2D PoseEstimator::estimate_from_odometory(const Pose2D cur_pose, const odome
 
 Pose2D PoseEstimator::estimate_from_scan(const Pose2D cur_pose, const PointCloud *cur_pc, const GridMap& world_map) const
 {
-    Pose2D movement;
+    Movement2D movement;
     Pose2D pose = cur_pose;
     PointCloud pc, ref_scan;
     double min_x = cur_pose.x - 1500;
@@ -59,7 +59,7 @@ Pose2D PoseEstimator::estimate_from_scan(const Pose2D cur_pose, const PointCloud
     ref_scan.analyse_points();
     movement = scan_matcher.do_scan_matching(&pc, &ref_scan, 1.0f);
 
-    pose.move_to(movement);
+    pose.move(movement);
 
 out:
     pose.print();

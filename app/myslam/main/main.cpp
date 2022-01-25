@@ -17,6 +17,7 @@ static int save_main(int argc, const char *argv[]);
 static int scan_matching_main(int argc, const char *argv[]);
 static int scan_plot_main(int argc, const char *argv[]);
 static int remocon_main(int argc, const char *argv[]);
+static int debug_main(int argc, const char *argv[]);
 static int usage_main(int argc, const char *argv[]);
 
 struct argstr_func {
@@ -33,6 +34,7 @@ static const struct argstr_func main_func_table[] = {
     { "scan_plot",      1,  scan_plot_main,     "scan" },
     { "remocon",        1,  remocon_main,       "remocon" },
     { "matching",       4,  scan_matching_main, "scan matching" },
+    { "debug",          1,  debug_main,         "debug" },
     { "usage",          1,  usage_main,         "usage" },
 };
 static constexpr int table_size = sizeof(main_func_table) / sizeof(argstr_func);
@@ -193,13 +195,8 @@ static int scan_matching_main(int argc, const char *argv[])
         ref_data.pc()->analyse_points();
         cur_data.pc()->analyse_points();
 
-        Pose2D dev = scan_matcher.do_scan_matching(cur_data.pc(), ref_data.pc(), 2.0f);
-
-        double theta = cur_pose.direction + dev.direction;
-        double x = dev.x * cos(theta) - dev.y * sin(theta);
-        double y = dev.x * sin(theta) + dev.y * cos(theta);
-        Pose2D move_world(x, y, dev.direction);
-        cur_pose.move_to(move_world);
+        Movement2D movement = scan_matcher.do_scan_matching(cur_data.pc(), ref_data.pc(), 2.0f);
+        cur_pose.move(movement);
     }
 
     printf("//-------------------------------------------------------\n");
@@ -275,6 +272,18 @@ static int remocon_main(int argc, const char *argv[])
     motor.deinit();
     remocon.deinit();
 
+    return EXIT_SUCCESS;
+}
+
+/**
+ * @brief スキャンマッチングだけを行うモード
+ * 
+ * @param argc 
+ * @param argv
+ * @return int 
+ */
+static int debug_main(int argc, const char *argv[])
+{
     return EXIT_SUCCESS;
 }
 

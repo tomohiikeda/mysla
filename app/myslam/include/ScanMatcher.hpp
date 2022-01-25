@@ -10,8 +10,8 @@ class ScanMatcher {
         virtual ~ScanMatcher(void){};
         void set_current_scan(const PointCloud *pc);
         void set_reference_scan(const PointCloud *pc);
-        Pose2D do_scan_matching(double speed = 1.0f) const;
-        Pose2D do_scan_matching(const PointCloud *cur_scan, const PointCloud *ref_scan, const double speed);
+        Movement2D do_scan_matching(double speed = 1.0f) const;
+        Movement2D do_scan_matching(const PointCloud *cur_scan, const PointCloud *ref_scan, const double speed);
     
     protected:
         enum cost_type {
@@ -35,13 +35,10 @@ class ScanMatcher {
                 double *ev_history,
                 uint32_t history_num,
                 enum cost_type cost_type) const;
-        Pose2D steepest_descent(const PointCloud *scan,
-                                const PointCloud *ref_scan,
-                                const std::vector<uint32_t>& associate_list,
-                                const enum cost_type cost_type) const;
-        Pose2D full_search(const PointCloud *scan,
-                           const PointCloud *ref_scan,
-                           const std::vector<uint32_t>& associate_list) const;
+        Movement2D steepest_descent(const PointCloud *scan,
+                                    const PointCloud *ref_scan,
+                                    const std::vector<uint32_t>& associate_list,
+                                    const enum cost_type cost_type) const;
         void data_associate(const PointCloud *cur_scan,
                             const PointCloud *ref_scan,
                             std::vector<uint32_t>& associate_list) const;

@@ -1,6 +1,7 @@
 #pragma once
 #include "Common.hpp"
 #include "Util.hpp"
+#include "Movement2D.hpp"
 
 class Pose2D {
     public:
@@ -11,7 +12,7 @@ class Pose2D {
         Pose2D(double x, double y, double dir);
         void print(void) const;
         void print(uint32_t num) const;
-        void move_to(const Pose2D& move);
+        void move(const Movement2D& movement);
         void set(double x, double y, double dir);
         void save_to_file(const std::string filename) const;
         void load_from_file(const std::string filename);

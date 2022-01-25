@@ -56,7 +56,7 @@ uint32_t ScanMatcher::is_matching_done(
 /**
  * @brief スキャンマッチング実行
  */
-Pose2D ScanMatcher::do_scan_matching(const PointCloud *cur_scan, const PointCloud *ref_scan, double speed)
+Movement2D ScanMatcher::do_scan_matching(const PointCloud *cur_scan, const PointCloud *ref_scan, double speed)
 {
     this->set_current_scan(cur_scan);
     this->set_reference_scan(ref_scan);
@@ -66,7 +66,7 @@ Pose2D ScanMatcher::do_scan_matching(const PointCloud *cur_scan, const PointClou
 /**
  * @brief スキャンマッチング実行
  */
-Pose2D ScanMatcher::do_scan_matching(double speed) const
+Movement2D ScanMatcher::do_scan_matching(double speed) const
 {
     std::vector<uint32_t> associate_list;
     PointCloud temp_scan = *this->cur_scan;
@@ -75,8 +75,7 @@ Pose2D ScanMatcher::do_scan_matching(double speed) const
     double ev = DBL_MAX;
     double ev_history[10] = {0.0f};
     uint32_t history_num = sizeof(ev_history) / sizeof(double);
-    Pose2D dev;
-    Pose2D total_dev(0,0,0);
+    Movement2D total_movement;
 
     if (this->is_debug_mode()) {
         this->debug_plotter.plot(this->cur_scan, this->ref_scan);
@@ -99,17 +98,18 @@ Pose2D ScanMatcher::do_scan_matching(double speed) const
         //wait_for_key();
 
         // その対応付けでどのくらい遷移させれば最小コストになるか求める。
-        dev = steepest_descent(&temp_scan, this->ref_scan, associate_list, cost_type);
+        Movement2D movement = steepest_descent(&temp_scan, this->ref_scan, associate_list, cost_type);
+        std::cout << movement.move_matrix << std::endl;
 
         // 計算した分移動する。
-        temp_scan.move(dev);
+        temp_scan.move(movement);
 
         // 移動後のコストを計算する
         pre_ev = ev;
         ev = this->cost_function(&temp_scan, ref_scan, associate_list, cost_type);
 
         // 総移動量に足しておく
-        total_dev.move_to(dev);
+        total_movement.move(movement);
 
         // コストの過去N回分を記録する
         for (int i = history_num - 1; i > 0; i--) {
@@ -117,8 +117,8 @@ Pose2D ScanMatcher::do_scan_matching(double speed) const
         }
         ev_history[0] = (ev - pre_ev);
 
-        scan_matcher_debug("[%d]dx=%f, dy=%f, dtheta=%f, cost_type=%d, ev=%f\n",
-                            iter, dev.x, dev.y, dev.direction, cost_type, ev);
+        //scan_matcher_debug("[%d]dx=%f, dy=%f, dtheta=%f, cost_type=%d, ev=%f\n",
+        //                    iter, dev.x, dev.y, dev.direction, cost_type, ev);
 
         // マッチングを終わらせるかチェック
         uint32_t done = is_matching_done(ev, pre_ev, ev_history, history_num, cost_type);
@@ -127,14 +127,14 @@ Pose2D ScanMatcher::do_scan_matching(double speed) const
             break;
         }
     }
-
-    printf("Matching Done! dx=%f, dy=%f, dtheta=%f\n", total_dev.x, total_dev.y, total_dev.direction);
+//
+    //printf("Matching Done! dx=%f, dy=%f, dtheta=%f\n", total_dev.x, total_dev.y, total_dev.direction);
 
     if (this->is_debug_mode()) {
         sleep(speed);
     }
 
-    return total_dev;
+    return total_movement;
 }
 
 double ScanMatcher::differential(const PointCloud *scan,
@@ -159,7 +159,7 @@ double ScanMatcher::differential(const PointCloud *scan,
  * @param cost_type コストをどのタイプで計算するか
  * @return Pose2D
  */
-Pose2D ScanMatcher::steepest_descent(const PointCloud *scan,
+Movement2D ScanMatcher::steepest_descent(const PointCloud *scan,
                                      const PointCloud *ref_scan,
                                      const std::vector<uint32_t>& associate_list,
                                      const enum cost_type cost_type) const
@@ -169,10 +169,10 @@ Pose2D ScanMatcher::steepest_descent(const PointCloud *scan,
     const double kk = (cost_type == COST_SIMPLE) ? 0.00000001 : 0.00000001;
     PointCloud temp_scan = *scan;
     double ev = this->cost_function(&temp_scan, ref_scan, associate_list, cost_type);
-    Pose2D total_mov(0,0,0);
+    Movement2D total_mov;
     double min_ev = ev;
     double pre_ev = 0;
-    Pose2D min_mov(0,0,0);
+    Movement2D min_mov;
     int min_idx = 0;
 
     scan_matcher_debug("[0]ev=%f, (0, 0, 0)\n", ev);
@@ -204,9 +204,8 @@ Pose2D ScanMatcher::steepest_descent(const PointCloud *scan,
         if (ev - pre_ev > 5000)
             break;
 
-        total_mov.x += dx;
-        total_mov.y += dy;
-        total_mov.direction += dtheta;
+        Movement2D movement(dx, dy, dtheta);
+        total_mov.move(movement);
 
         if (ev < min_ev) {
             min_ev = ev;
@@ -215,32 +214,8 @@ Pose2D ScanMatcher::steepest_descent(const PointCloud *scan,
         }
 
     }
-    scan_matcher_debug("[min]%d(%f, %f, %f)\n", min_idx, min_mov.x, min_mov.y, min_mov.direction);
+    //scan_matcher_debug("[min]%d(%f, %f, %f)\n", min_idx, min_mov.x, min_mov.y, min_mov.direction);
     return min_mov;
-}
-
-/**
- * @brief 対応点リストassociate_listに対して、
- * scanをどのくらい動かせばref_scanに対するコストが最小になるか求める
- */
-Pose2D ScanMatcher::full_search(const PointCloud *scan,
-                                const PointCloud *ref_scan,
-                                const std::vector<uint32_t>& associate_list) const
-{
-    PointCloud temp_scan = *scan;
-    double min_cost = DBL_MAX;
-    double min_radian = 0;
-
-    for (int i=0; i<1440; i++) {
-        temp_scan.rotate(to_radian(0.25));
-        double cost = this->cost_function(&temp_scan, ref_scan, associate_list, COST_SIMPLE);
-        if (cost < min_cost) {
-            min_cost = cost;
-            min_radian = to_radian(i*0.25);
-        }
-    }
-    Pose2D dev(0, 0, min_radian);
-    return dev;
 }
 
 /**

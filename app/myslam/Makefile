@@ -42,7 +42,7 @@ CXXSRC += \
 		DataRetriever.cpp \
 		Pose2D.cpp
 		
-C_INCLUDES += -I$(CURDIR)/../../sdk/include -I$(CURDIR)/../../sdk/src -I$(CURDIR)/include
+C_INCLUDES += -I$(CURDIR)/../../sdk/include -I$(CURDIR)/../../sdk/src -I$(CURDIR)/include -I$(CURDIR)/../../eigen
 
 EXTRA_OBJ := 
 LD_LIBS += -lstdc++ -lpthread

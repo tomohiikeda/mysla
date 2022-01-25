@@ -22,3 +22,12 @@ double Point::vertical_distance_to(const Point& p) const {
     double d = (this->x - p.x) * p.normal.x + (this->y - p.y)* p.normal.y;
     return d * d;
 }
+
+void Point::move(const Movement2D& movement)
+{
+    Eigen::Matrix<double, 3, 1> point;
+    point << this->x, this->y, 1;
+    point = movement.move_matrix * point;
+    this->x = point(0, 0);
+    this->y = point(1, 0);
+}

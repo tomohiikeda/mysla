@@ -21,7 +21,8 @@ class PointCloud{
         void translate(double x, double y);
         void thin_out(uint32_t interval);
         void rotate(double radian);
-        void move(Pose2D movement);
+        void move(const Pose2D& movement);
+        void move(const Movement2D& movement);
         void save_to_file(const char *filename) const;
         void load_from_file(const char *filename);
         void analyse_points(void);

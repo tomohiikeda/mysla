@@ -22,11 +22,14 @@ void Pose2D::print(uint32_t num) const
     printf("[%05d]%lf, %lf, %lf(%lf degree)\n", num, x, y, direction, to_degree(direction));
 }
 
-void Pose2D::move_to(const Pose2D& move)
+void Pose2D::move(const Movement2D& movement)
 {
-    this->direction += move.direction;
-    this->x += move.x;
-    this->y += move.y;
+    Eigen::Matrix<double, 3, 1> pose;
+    pose << this->x, this->y, 1;
+    pose = movement.move_matrix * pose;
+    this->x = pose(0, 0);
+    this->y = pose(1, 0);
+    this->direction += movement.rotate;
 }
 
 void Pose2D::set(double x, double y, double dir)

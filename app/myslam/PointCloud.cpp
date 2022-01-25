@@ -35,7 +35,7 @@ void PointCloud::copy_to(PointCloud& to) const
         to.add(points.at(i));
 }
 
-void PointCloud::translate(double x, double y)
+void PointCloud::translate(const double x, const double y)
 {
     for (size_t i=0; i<points.size(); i++) {
         points.at(i).x += x;
@@ -55,7 +55,7 @@ void PointCloud::thin_out(uint32_t interval)
     std::copy(tmp_points.begin(), tmp_points.end(), back_inserter(points));
 }
 
-void PointCloud::rotate(double radian)
+void PointCloud::rotate(const double radian)
 {
     for (size_t i=0; i<points.size(); i++) {
         double x = points.at(i).x;
@@ -65,10 +65,18 @@ void PointCloud::rotate(double radian)
     }
 }
 
-void PointCloud::move(Pose2D movement)
+void PointCloud::move(const Pose2D& movement)
 {
     this->rotate(movement.direction);
     this->translate(movement.x, movement.y);
+}
+
+void PointCloud::move(const Movement2D& movement)
+{
+    for (size_t i=0; i<points.size(); i++) {
+        Point p = points.at(i);
+        p.move(movement);
+    }
 }
 
 void PointCloud::save_to_file(const char *filename) const

@@ -1,6 +1,7 @@
 #pragma once
 #include <cmath>
 #include "Vector2D.hpp"
+#include "Movement2D.hpp"
 
 typedef enum {
     PT_LINE,
@@ -19,6 +20,7 @@ class Point{
         PointType type;
         double distance_to(const Point& p) const;
         double vertical_distance_to(const Point& p) const ;
+        void move(const Movement2D& movement);
 
     protected:
         
