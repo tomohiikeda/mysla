@@ -30,8 +30,6 @@ Pose2D PoseEstimator::estimate_from_odometory(const Pose2D cur_pose, const odome
     pose.y += dy;
     pose.direction += dtheta;
 
-    pose.print();
-
     return pose;
 }
 
@@ -67,6 +65,5 @@ Pose2D PoseEstimator::estimate_from_scan(const Pose2D cur_pose, PointCloud *cur_
     cur_pc->move(movement);
 
 out:
-    pose.print();
     return pose;
 }
