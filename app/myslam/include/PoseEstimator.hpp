@@ -15,7 +15,7 @@ class PoseEstimator{
     protected:
         ScanMatcher& scan_matcher;
         Pose2D estimate_from_odometory(const Pose2D cur_pose, const odometory_t odom) const;
-        Pose2D estimate_from_scan(const Pose2D cur_pose, PointCloud *cur_pc, const GridMap& world_map) const;
+        Pose2D estimate_from_scan(const Pose2D cur_pose, PointCloud& cur_pc, const GridMap& world_map) const;
         PointCloud pre_pc;
         Pose2D diff_from_pre;
 };

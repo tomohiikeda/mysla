@@ -83,8 +83,6 @@ void Slam::process_loop(void)
         cur_pose = pose_estimator.estimate_position(cur_pose, slam_data, *world_grid_map);
 
         // ワールドマップを更新する。
-        //slam_data.pc()->move(cur_pose);
-
         world_grid_map->set_points(slam_data.pc());
 
         // 現在位置とワールドマップを表示する。
