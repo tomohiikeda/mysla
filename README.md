@@ -8,8 +8,9 @@ SLAMを自分で作ってみようというプロジェクト。HWはアール�
 ### 環境
 * HW: RaspberryPi Mouse
 * OS: Raspbian(Version???)
-* ドライバ: 
-* コントローラ: 
+* ドライバ: メーカー製ドライバ (https://github.com/rt-net/RaspberryPiMouse.git) をちょっと改造したもの
+* コントローラ: DualShock4
+* 必要ライブラリ: Eigen (https://eigen.tuxfamily.org)
 
 ### 準備
 
