@@ -12,6 +12,7 @@ class Grid {
         void set(const Point p);
         Point get(void) const;
         bool is_valid(void) const;
+        bool is_tentative(void) const;
         std::string to_string(void) const;
 
     protected:

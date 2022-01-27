@@ -35,15 +35,16 @@ Pose2D PoseEstimator::estimate_from_odometory(const Pose2D cur_pose, const odome
     return pose;
 }
 
-Pose2D PoseEstimator::estimate_from_scan(const Pose2D cur_pose, const PointCloud *cur_pc, const GridMap& world_map) const
+Pose2D PoseEstimator::estimate_from_scan(const Pose2D cur_pose, PointCloud *cur_pc, const GridMap& world_map) const
 {
     Movement2D movement;
     Pose2D pose = cur_pose;
     PointCloud pc, ref_scan;
-    double min_x = cur_pose.x - 1500;
-    double max_x = cur_pose.x + 1500;
-    double min_y = cur_pose.y - 1500;
-    double max_y = cur_pose.y + 1500;
+    double offset = 1500.0f;
+    double min_x = cur_pose.x - offset;
+    double max_x = cur_pose.x + offset;
+    double min_y = cur_pose.y - offset;
+    double max_y = cur_pose.y + offset;
 
     world_map.to_point_cloud(&ref_scan);
 
@@ -52,14 +53,18 @@ Pose2D PoseEstimator::estimate_from_scan(const Pose2D cur_pose, const PointCloud
         goto out;
 
     cur_pc->copy_to(pc);
-    //pc.trim(min_x, max_x, min_y, max_y);
+    pc.trim(-offset, offset, -offset, offset);
     pc.move(pose);
 
-    //ref_scan.trim(min_x, max_x, min_y, max_y);
+    ref_scan.trim(min_x, max_x, min_y, max_y);
     ref_scan.analyse_points();
+
     movement = scan_matcher.do_scan_matching(&pc, &ref_scan, 1.0f);
 
+    cur_pc->move(pose);
+
     pose.move(movement);
+    cur_pc->move(movement);
 
 out:
     pose.print();

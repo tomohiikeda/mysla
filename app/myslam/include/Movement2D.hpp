@@ -20,7 +20,7 @@ struct Movement2D {
             move_matrix << std::cos(theta), -std::sin(theta), x,
                            std::sin(theta), std::cos(theta), y,
                            0, 0, 1;
-            rotate = 0.0f;
+            rotate = theta;
         };
 
         void move(const Movement2D movement)

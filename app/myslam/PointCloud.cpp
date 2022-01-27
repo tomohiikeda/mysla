@@ -74,7 +74,7 @@ void PointCloud::move(const Pose2D& movement)
 void PointCloud::move(const Movement2D& movement)
 {
     for (size_t i=0; i<points.size(); i++) {
-        Point p = points.at(i);
+        Point& p = points.at(i);
         p.move(movement);
     }
 }

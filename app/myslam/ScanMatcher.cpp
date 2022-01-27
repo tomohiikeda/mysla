@@ -95,11 +95,8 @@ Movement2D ScanMatcher::do_scan_matching(double speed) const
             sleep(0.5 * speed);
         }
 
-        //wait_for_key();
-
         // その対応付けでどのくらい遷移させれば最小コストになるか求める。
         Movement2D movement = steepest_descent(&temp_scan, this->ref_scan, associate_list, cost_type);
-        std::cout << movement.move_matrix << std::endl;
 
         // 計算した分移動する。
         temp_scan.move(movement);
@@ -117,9 +114,6 @@ Movement2D ScanMatcher::do_scan_matching(double speed) const
         }
         ev_history[0] = (ev - pre_ev);
 
-        //scan_matcher_debug("[%d]dx=%f, dy=%f, dtheta=%f, cost_type=%d, ev=%f\n",
-        //                    iter, dev.x, dev.y, dev.direction, cost_type, ev);
-
         // マッチングを終わらせるかチェック
         uint32_t done = is_matching_done(ev, pre_ev, ev_history, history_num, cost_type);
         if (done) {
@@ -127,8 +121,6 @@ Movement2D ScanMatcher::do_scan_matching(double speed) const
             break;
         }
     }
-//
-    //printf("Matching Done! dx=%f, dy=%f, dtheta=%f\n", total_dev.x, total_dev.y, total_dev.direction);
 
     if (this->is_debug_mode()) {
         sleep(speed);

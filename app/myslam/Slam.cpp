@@ -65,8 +65,6 @@ void Slam::process_loop(void)
 
     this->running = true;
 
-    this->load_from_file("slam", cur_pose, *world_grid_map);
-
     // ずっとループ
     while (this->running == true) {
 
@@ -81,33 +79,22 @@ void Slam::process_loop(void)
         if (retriever.retrieve(slam_data) == false)
             break;
 
-        //slam_data.pc()->trim(-1500, 1500, -1500, 1500);
-
         // 最新SlamDataとワールドマップから現在位置を推定する。
         cur_pose = pose_estimator.estimate_position(cur_pose, slam_data, *world_grid_map);
 
-        printf("before\n");
-        slam_data.pc()->print();
-
         // ワールドマップを更新する。
-        slam_data.pc()->move(cur_pose);
-
-        printf("after\n");
-        slam_data.pc()->print();
+        //slam_data.pc()->move(cur_pose);
 
         world_grid_map->set_points(slam_data.pc());
 
         // 現在位置とワールドマップを表示する。
-        //if (!this->debug)
-            plotter.plot(cur_pose, *world_grid_map);
+        plotter.plot(cur_pose, *world_grid_map);
+
+        if (this->debug)
+            sleep(1);
 
         loop_num++;
-
-        //sleep(1);
-        //wait_for_key();
     }
-
-    //this->save_to_file("slam", cur_pose, *world_grid_map);
 
     delete world_grid_map;
     return;

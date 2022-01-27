@@ -30,6 +30,11 @@ bool Grid::is_valid(void) const
     return (this->point_num) ? true : false;
 }
 
+bool Grid::is_tentative(void) const
+{
+    return (this->point_num == 1) ? true : false;
+}
+
 std::string Grid::to_string(void) const
 {
     std::string str = std::to_string(represent.x) + " " +
