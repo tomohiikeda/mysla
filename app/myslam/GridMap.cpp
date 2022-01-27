@@ -66,19 +66,28 @@ int32_t GridMap::to_index_y(const double world_y) const
 void GridMap::set_points(const PointCloud *world_pc)
 {
     for (size_t i=0; i<world_pc->size(); i++) {
-
-        //if (world_pc->at(i).type == PT_ISOLATE)
-        //    continue;
-
         Point p = world_pc->at(i);
         int32_t index_x = to_index_x(p.x);
         int32_t index_y = to_index_x(p.y);
-
         if (index_x == -1 || index_y == -1)
-            return;
-
+            continue;
         this->grid_map[index_x][index_y].set(p);
     }
+
+    // 2回連続でセットされなかったGridは初期化する。
+    if (this->pre_pc.size()) {
+        for (size_t i=0; i<pre_pc.size(); i++) {
+            Point p = pre_pc.at(i);
+            int32_t index_x = to_index_x(p.x);
+            int32_t index_y = to_index_x(p.y);
+            if (index_x == -1 || index_y == -1)
+                continue;
+            if (this->grid_map[index_x][index_y].is_tentative())
+                this->grid_map[index_x][index_y].init(0, 0, 0);
+        }
+    }
+
+    world_pc->copy_to(this->pre_pc);
 }
 
 void GridMap::to_point_cloud(PointCloud *to_pc) const

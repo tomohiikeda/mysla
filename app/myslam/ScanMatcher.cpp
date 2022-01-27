@@ -206,7 +206,7 @@ Movement2D ScanMatcher::steepest_descent(const PointCloud *scan,
         }
 
     }
-    //scan_matcher_debug("[min]%d(%f, %f, %f)\n", min_idx, min_mov.x, min_mov.y, min_mov.direction);
+    scan_matcher_debug("[min]%d(%f, %f, %f)\n", min_idx, min_mov.x, min_mov.y, min_mov.direction);
     return min_mov;
 }
 

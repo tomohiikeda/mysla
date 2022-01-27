@@ -38,4 +38,5 @@ class GridMap {
         int32_t to_index_x(const double world_x) const;
         int32_t to_index_y(const double world_y) const;
         Grid grid_map[max_grid_index_x][max_grid_index_y];
+        PointCloud pre_pc;
 };
