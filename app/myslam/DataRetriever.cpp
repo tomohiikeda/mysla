@@ -12,7 +12,7 @@ bool DataRetriever::init_online_mode(void)
 {
     if (this->sensor.init() == false)
         return false;
-    
+
     if (this->odometer.init() == false)
         return false;
 
@@ -51,8 +51,12 @@ bool DataRetriever::retrieve(SlamData& slam_data)
 
 bool DataRetriever::retrieve_online(SlamData& slam_data)
 {
-    this->sensor.get_point_cloud(slam_data.pc());
-    this->odometer.get_odometory(slam_data.odometory());
+    if (this->sensor.get_point_cloud(slam_data.pc()) == false)
+        return false;
+
+    if (this->odometer.get_odometory(slam_data.odometory()) == false)
+        return false;
+
     return true;
 }
 

@@ -100,7 +100,7 @@ void Slam::process_loop(void)
     //this->save_to_file("mov4_374", cur_pose, *world_grid_map);
     printf("//---------------------------------------------------\n");
     printf("// [%04d] (%04.5fmm, %04.5fmm, %03.5fdeg) total_elapsed=%lfsec\n", loop_num, cur_pose.x, cur_pose.y, to_degree(cur_pose.direction), total_elapsed);
-    printf("ave=%lf\n", total_elapsed / loop_num);
+    printf("// ave=%lf\n", total_elapsed / loop_num);
     printf("//---------------------------------------------------\n");
 
     delete world_grid_map;

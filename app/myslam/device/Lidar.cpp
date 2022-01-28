@@ -110,12 +110,11 @@ bool Lidar::get_point_cloud(PointCloud *point_cloud)
     }
 
     point_cloud->clear();
-    const double pi = 3.141592653589793;
     for(int i=0; i<(int)count; i++){
         double deg = nodes[i].angle_z_q14 * 90.f / 16384.f;
         double dist = nodes[i].dist_mm_q2 / 4.0f;
-        double x = dist * std::sin(deg * pi / 180);
-        double y = dist * std::cos(deg * pi / 180);
+        double x = dist * std::sin(deg * M_PI / 180);
+        double y = dist * std::cos(deg * M_PI / 180);
         if(dist != 0){
             Point p(x, y);
             point_cloud->add(p);
