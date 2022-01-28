@@ -41,7 +41,7 @@ static constexpr int table_size = sizeof(main_func_table) / sizeof(argstr_func);
 
 /**
  * @brief Ctrl+Cを押されたときのハンドラ
- * 
+ *
  */
 bool ctrl_c_pressed;
 static void ctrlc(int)
@@ -51,14 +51,14 @@ static void ctrlc(int)
 
 /**
  * @brief SLAM実行モード
- * 
- * @param argc 
+ *
+ * @param argc
  * @param argv[1] "slam" or "slam_debug"
  * @param argv[2] mode "offline" or "online"
  * @param argv[3] ディレクトリ名
  * @param argv[4] 開始インデックス "-"にすると0
  * @param argv[5] 終了インデックス "-"にするとファイルがあるところまで
- * @return int 
+ * @return int
  */
 static int slam_main(int argc, const char *argv[])
 {
@@ -109,11 +109,11 @@ static int slam_main(int argc, const char *argv[])
 
 /**
  * @brief DS4で動かして、スキャンを保存するモード
- * 
- * @param argc 
+ *
+ * @param argc
  * @param argv[2] 保存するディレクトリ名
  * @param argv[3] Interval(sec)
- * @return int 
+ * @return int
  */
 static int save_main(int argc, const char *argv[])
 {
@@ -164,12 +164,12 @@ static int save_main(int argc, const char *argv[])
 
 /**
  * @brief スキャンマッチングだけを行うモード
- * 
- * @param argc 
+ *
+ * @param argc
  * @param argv[2] データディレクトリ名
  * @param argv[3] 開始インデックス
  * @param argv[4] 最終インデックス
- * @return int 
+ * @return int
  */
 static int scan_matching_main(int argc, const char *argv[])
 {
@@ -217,10 +217,10 @@ static int scan_matching_main(int argc, const char *argv[])
 
 /**
  * @brief Lidarでスキャンしたものをリアルタイムでプロットするモード
- * 
- * @param argc 
- * @param argv 
- * @return int 
+ *
+ * @param argc
+ * @param argv
+ * @return int
  */
 static int scan_plot_main(int argc, const char *argv[])
 {
@@ -251,10 +251,10 @@ static int scan_plot_main(int argc, const char *argv[])
 
 /**
  * @brief DS4で操作するモード
- * 
- * @param argc 
- * @param argv 
- * @return int 
+ *
+ * @param argc
+ * @param argv
+ * @return int
  */
 static int remocon_main(int argc, const char *argv[])
 {
@@ -280,10 +280,10 @@ static int remocon_main(int argc, const char *argv[])
 
 /**
  * @brief スキャンマッチングだけを行うモード
- * 
- * @param argc 
+ *
+ * @param argc
  * @param argv
- * @return int 
+ * @return int
  */
 static int debug_main(int argc, const char *argv[])
 {
