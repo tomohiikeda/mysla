@@ -37,8 +37,10 @@ bool DataRetriever::start(void)
 
 void DataRetriever::stop(void)
 {
-    sensor.stop();
-    odometer.deinit();
+    if (this->mode == online_mode) {
+        this->sensor.stop();
+        this->odometer.deinit();
+    }
 }
 
 bool DataRetriever::retrieve(SlamData& slam_data)
