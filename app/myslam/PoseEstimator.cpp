@@ -44,7 +44,8 @@ Pose2D PoseEstimator::estimate_from_scan(const Pose2D cur_pose, PointCloud& cur_
     double min_y = cur_pose.y - offset;
     double max_y = cur_pose.y + offset;
 
-    world_map.to_point_cloud(&ref_scan);
+    world_map.to_point_cloud(&ref_scan, min_x, max_x, min_y, max_y);
+    //ref_scan.analyse_points();
 
     // 初回は前回スキャンが無いので計算を無視
     if (ref_scan.size() == 0)
@@ -53,9 +54,6 @@ Pose2D PoseEstimator::estimate_from_scan(const Pose2D cur_pose, PointCloud& cur_
     cur_pc.copy_to(pc);
     pc.trim(-offset, offset, -offset, offset);
     pc.move(pose);
-
-    ref_scan.trim(min_x, max_x, min_y, max_y);
-    ref_scan.analyse_points();
 
     movement = scan_matcher.do_scan_matching(&pc, &ref_scan, 1.0f);
 

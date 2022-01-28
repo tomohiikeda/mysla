@@ -77,9 +77,9 @@ void GridMap::set_points(const PointCloud *world_pc)
     // 2回連続でセットされなかったGridは初期化する。
     if (this->pre_pc.size()) {
         for (size_t i=0; i<pre_pc.size(); i++) {
-            Point p = pre_pc.at(i);
+            const Point& p = pre_pc.at(i);
             int32_t index_x = to_index_x(p.x);
-            int32_t index_y = to_index_x(p.y);
+            int32_t index_y = to_index_y(p.y);
             if (index_x == -1 || index_y == -1)
                 continue;
             if (this->grid_map[index_x][index_y].is_tentative())
@@ -92,9 +92,19 @@ void GridMap::set_points(const PointCloud *world_pc)
 
 void GridMap::to_point_cloud(PointCloud *to_pc) const
 {
-    for (uint32_t x=0; x<max_grid_index_x; x++) {
-        for (uint32_t y=0; y<max_grid_index_y; y++) {
-            if (this->grid_map[x][y].is_valid()) {
+    this->to_point_cloud(to_pc, map_min_x, map_max_x-1, map_min_y, map_max_y-1);
+}
+
+void GridMap::to_point_cloud(PointCloud *to_pc, double min_x, double max_x, double min_y, double max_y) const
+{
+    int32_t min_index_x = (to_index_x(min_x) != -1) ? to_index_x(min_x) : 0;
+    int32_t max_index_x = (to_index_x(max_x) != -1) ? to_index_x(max_x) : max_grid_index_x;
+    int32_t min_index_y = (to_index_y(min_y) != -1) ? to_index_y(min_y) : 0;
+    int32_t max_index_y = (to_index_y(max_y) != -1) ? to_index_y(max_y) : max_grid_index_y;
+
+    for (int32_t x=min_index_x; x<max_index_x; x++) {
+        for (int32_t y=min_index_y; y<max_index_y; y++) {
+            if (this->grid_map[x][y].is_valid() && !this->grid_map[x][y].is_tentative()) {
                 Point p = this->grid_map[x][y].get();
                 to_pc->add(p);
             }

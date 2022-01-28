@@ -1,8 +1,6 @@
 #include "Common.hpp"
 #include <iostream>
 #include <unistd.h>
-#include <time.h>
-#include <sys/time.h>
 #include "Slam.hpp"
 #include "PoseEstimator.hpp"
 #include "GnuplotPlotter.hpp"
@@ -62,17 +60,17 @@ void Slam::process_loop(void)
     uint32_t loop_num = 0;
     Pose2D cur_pose(0, 0, 0);
     GridMap *world_grid_map = new GridMap();
+    double total_elapsed = 0;
 
     this->running = true;
+
+    //this->load_from_file("mov4_374", cur_pose, *world_grid_map);
 
     // ずっとループ
     while (this->running == true) {
 
-        struct timeval timeval;
-        gettimeofday(&timeval, NULL);
-        printf("//-------------------------------------------------------\n");
-        printf("//  Index = %d (%fmm, %fmm, %fdeg)\n", loop_num, cur_pose.x, cur_pose.y, to_degree(cur_pose.direction));
-        printf("//-------------------------------------------------------\n");
+        struct timeval timeval_start;
+        gettimeofday(&timeval_start, NULL);
 
         // 最新のSlamDataを取得する。
         SlamData slam_data;
@@ -89,10 +87,17 @@ void Slam::process_loop(void)
         plotter.plot(cur_pose, *world_grid_map);
 
         if (this->debug)
-            sleep(1);
+            sleep(0.1);
 
         loop_num++;
+
+        double elapsed = elapsedtime(timeval_start);
+        total_elapsed += elapsed;
+        printf("// [%04d] (%04.5fmm, %04.5fmm, %03.5fdeg) elapsed=%lfsec\n", loop_num, cur_pose.x, cur_pose.y, to_degree(cur_pose.direction), elapsed);
+        printf("ave=%lf\n", total_elapsed / loop_num);
     }
+
+    //this->save_to_file("mov4_374", cur_pose, *world_grid_map);
 
     delete world_grid_map;
     return;

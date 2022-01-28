@@ -10,8 +10,9 @@ class GnuplotPlotter: public IPlotter{
         bool open(void);
         void close(void);
         void plot(const Pose2D pose) const;
-        void plot(const Pose2D pose, const PointCloud* pc) const;
+        void plot(const Pose2D pose, const PointCloud *pc, const double pt_size) const;
         void plot(const PointCloud* pc) const;
+        void plot(const PointCloud *pc_0, const double pt_size_0, const PointCloud *pc_1, const double pt_size_1) const;
         void plot(const PointCloud* pc0, const PointCloud* pc1) const;
         void plot(const PointCloud *pc_0,
                   const PointCloud *pc_1,
@@ -27,10 +28,6 @@ class GnuplotPlotter: public IPlotter{
         void input_points(const PointCloud *pc, const char *data_var) const;
         void input_pose(const Pose2D pose, const char *data_var) const;
 
-        const int MIN_PLOT_X = -3000;
-        const int MAX_PLOT_X =  3000;
-        const int MIN_PLOT_Y = -3000;
-        const int MAX_PLOT_Y =  3000;
         const double POINT_SIZE = 0.7f;
 
     private:
