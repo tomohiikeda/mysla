@@ -19,11 +19,19 @@ void wait_for_key(void)
     std::cin >> aaa;
 }
 
-double elapsedtime(struct timeval starttime)
+double get_currenttime(void)
 {
-    struct timeval timeval_end;
-    gettimeofday(&timeval_end, NULL);
-    double start = (double)starttime.tv_sec + (double)starttime.tv_usec / 1000000;
-    double end   = (double)timeval_end.tv_sec + (double)timeval_end.tv_usec / 1000000;
-    return end - start;
+    struct timeval timeval;
+    gettimeofday(&timeval, NULL);
+    return (double)timeval.tv_sec + (double)timeval.tv_usec / 1000000;
+}
+
+double elapsedtime(double starttime)
+{
+    return get_currenttime() - starttime;
+}
+
+void wait_for_time(double starttime, double sec)
+{
+    while (elapsedtime(starttime) < sec);
 }

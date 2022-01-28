@@ -69,8 +69,7 @@ void Slam::process_loop(void)
     // ずっとループ
     while (this->running == true) {
 
-        struct timeval timeval_start;
-        gettimeofday(&timeval_start, NULL);
+        double starttime = get_currenttime();
 
         // 最新のSlamDataを取得する。
         SlamData slam_data;
@@ -89,10 +88,14 @@ void Slam::process_loop(void)
         if (this->debug)
             sleep(0.1);
 
+        double elapsed = elapsedtime(starttime);
+        total_elapsed += elapsed;
+
+        // 0.5s経つまで待つ
+        wait_for_time(starttime, 0.5f);
+
         loop_num++;
 
-        double elapsed = elapsedtime(timeval_start);
-        total_elapsed += elapsed;
         printf("// [%04d] (%04.5fmm, %04.5fmm, %03.5fdeg) elapsed=%lfsec\n", loop_num, cur_pose.x, cur_pose.y, to_degree(cur_pose.direction), elapsed);
         printf("ave=%lf\n", total_elapsed / loop_num);
     }
