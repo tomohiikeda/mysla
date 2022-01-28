@@ -44,6 +44,9 @@ class DataRetriever {
         uint32_t file_index;
         uint32_t end_index;
 
+        bool init_online_mode(void);
+        bool init_offline_mode(void);
         bool retrieve_online(SlamData& slam_data);
         bool retrieve_offline(SlamData& slam_data);
+        std::vector<SlamData> data_fifo;
 };

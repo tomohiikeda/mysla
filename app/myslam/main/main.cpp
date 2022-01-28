@@ -67,7 +67,10 @@ static int slam_main(int argc, const char *argv[])
     std::string dirname(argv[3]);
     uint32_t start_index = atoi(argv[4]);
     uint32_t end_index = atoi(argv[5]);
-    DataRetriever retriever(DataRetriever::offline_mode, lidar, pulse_sensor, dirname, start_index, end_index);
+    DataRetriever::slam_mode_e mode = strncmp(argv[2], "offline", 7) ?
+                            DataRetriever::online_mode : DataRetriever::offline_mode;
+
+    DataRetriever retriever(mode, lidar, pulse_sensor, dirname, start_index, end_index);
 
     GnuplotPlotter plotter;
     Slam *slam = new Slam(plotter, retriever);
@@ -86,11 +89,11 @@ static int slam_main(int argc, const char *argv[])
     if (slam->start() == false)
         return EXIT_FAILURE;
 
-    //if (motor.init() == false)
-    //    return EXIT_FAILURE;
+    if (motor.init() == false)
+        return EXIT_FAILURE;
 
-    //if (remocon.init() == false)
-    //    return EXIT_FAILURE;
+    if (remocon.init() == false)
+        return EXIT_FAILURE;
 
     while (ctrl_c_pressed == false)
         sleep(1);

@@ -2,19 +2,32 @@
 
 bool DataRetriever::init(void)
 {
-    if(this->sensor.init() == false)
+    if (this->mode == offline_mode)
+        return this->init_offline_mode();
+    else
+        return this->init_online_mode();
+}
+
+bool DataRetriever::init_online_mode(void)
+{
+    if (this->sensor.init() == false)
         return false;
     
-    if(this->odometer.init() == false)
+    if (this->odometer.init() == false)
         return false;
 
+    return true;
+}
+
+bool DataRetriever::init_offline_mode(void)
+{
     return true;
 }
 
 bool DataRetriever::start(void)
 {
     if (this->mode == online_mode) {
-        if(this->sensor.start() == false) {
+        if (this->sensor.start() == false) {
             return false;
         }
     }
@@ -38,7 +51,9 @@ bool DataRetriever::retrieve(SlamData& slam_data)
 
 bool DataRetriever::retrieve_online(SlamData& slam_data)
 {
-    return false;
+    this->sensor.get_point_cloud(slam_data.pc());
+    this->odometer.get_odometory(slam_data.odometory());
+    return true;
 }
 
 bool DataRetriever::retrieve_offline(SlamData& slam_data)
