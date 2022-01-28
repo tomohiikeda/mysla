@@ -59,6 +59,7 @@ bool SlamData::load_from_file(const char *filename)
 
 void SlamData::print(void) const
 {
+    printf("timestamp %f\n", this->timestamp);
     printf("odometory %d %d\n", this->odom.left, this->odom.right);
     printf("point size = %d\n", this->point_cloud.size());
     this->point_cloud.print();

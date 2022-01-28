@@ -8,6 +8,7 @@ class SlamData {
 
     public:
         SlamData(void);
+        double timestamp;
         PointCloud *pc(void);
         odometory_t *odometory(void);
         void save_to_file(const char *filename) const;

@@ -74,7 +74,7 @@ void Slam::process_loop(void)
         // 最新のSlamDataを取得する。
         SlamData slam_data;
         if (retriever.retrieve(slam_data) == false)
-            break;
+            continue;
 
         // 最新SlamDataとワールドマップから現在位置を推定する。
         cur_pose = pose_estimator.estimate_position(cur_pose, slam_data, *world_grid_map);
@@ -91,18 +91,16 @@ void Slam::process_loop(void)
         double elapsed = elapsedtime(starttime);
         total_elapsed += elapsed;
 
-        // 0.5s経つまで待つ
-        wait_for_time(starttime, 0.5f);
-
         loop_num++;
 
         printf("// [%04d] (%04.5fmm, %04.5fmm, %03.5fdeg) elapsed=%lfsec\n", loop_num, cur_pose.x, cur_pose.y, to_degree(cur_pose.direction), elapsed);
-        printf("ave=%lf\n", total_elapsed / loop_num);
+        printf("// ave=%lf\n", total_elapsed / loop_num);
     }
 
     //this->save_to_file("mov4_374", cur_pose, *world_grid_map);
     printf("//---------------------------------------------------\n");
     printf("// [%04d] (%04.5fmm, %04.5fmm, %03.5fdeg) total_elapsed=%lfsec\n", loop_num, cur_pose.x, cur_pose.y, to_degree(cur_pose.direction), total_elapsed);
+    printf("// total=%lf\n", total_elapsed);
     printf("// ave=%lf\n", total_elapsed / loop_num);
     printf("//---------------------------------------------------\n");
 
