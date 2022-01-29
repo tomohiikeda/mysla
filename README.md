@@ -6,8 +6,9 @@ SLAMを自分で作ってみようというプロジェクト。HWはアール�
 地図生成と自己位置推定(SLAM)を行います。あらかじめ取得したセンサデータを用いてローカルで実行するオフラインモード、コントローラでロボットを動かしながらリアルタイムで取得したセンサデータを用いるオンラインモードがあります。いずれ、自律移動を行えるようになります。
 
 ### 環境
-* HW: RaspberryPi Mouse
-* OS: Raspbian(Version???)
+* HW: RaspberryPi Mouse (https://rt-net.jp/products/raspberrypimousev3/)
+* OS: Linux Raspbian
+* Lidar: SLAMTEC RPLidar A2M8 (https://www.slamtec.com/en/Lidar/A2)
 * ドライバ: メーカー製ドライバ (https://github.com/rt-net/RaspberryPiMouse.git) をちょっと改造したもの
 * コントローラ: DualShock4
 * 必要ライブラリ: Eigen (https://eigen.tuxfamily.org)
