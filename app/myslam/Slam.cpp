@@ -83,7 +83,7 @@ void Slam::process_loop(void)
         world_grid_map->set_points(slam_data.pc());
 
         // 現在位置とワールドマップを表示する。
-        plotter.plot(cur_pose, *world_grid_map);
+        plotter.plot(cur_pose, *slam_data.pc(), *world_grid_map);
 
         if (this->debug)
             sleep(0.1);

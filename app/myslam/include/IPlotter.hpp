@@ -44,14 +44,26 @@ class IPlotter{
         virtual bool open(void) = 0;
         virtual void close(void) = 0;
         virtual void plot(const Pose2D& pose, const PointCloud& pc) const = 0;
-        virtual void plot(const Pose2D& pose, const struct IPlotter::plot_info& pose_info, const PointCloud& pc, const struct IPlotter::plot_info& pc_info) const = 0;
+        virtual void plot(const Pose2D& pose, const struct IPlotter::plot_info& pose_info,
+                          const PointCloud& pc, const struct IPlotter::plot_info& pc_info) const = 0;
+        virtual void plot(const Pose2D& pose, const PointCloud& pc_0, const PointCloud& pc_1) const = 0;
+        virtual void plot(const Pose2D& pose, const struct IPlotter::plot_info& pose_info,
+                          const PointCloud& pc_0, const struct IPlotter::plot_info& pc_info_0,
+                          const PointCloud& pc_1, const struct IPlotter::plot_info& pc_info_1) const = 0;
         virtual void plot(const PointCloud& pc) const = 0;
         virtual void plot(const PointCloud& pc, const struct IPlotter::plot_info& pc_info) const = 0;
         virtual void plot(const PointCloud& pc_0, const PointCloud& pc_1) const = 0;
-        virtual void plot(const PointCloud& pc_0, const struct IPlotter::plot_info& pc_info_0, const PointCloud& pc_1, const struct IPlotter::plot_info& pc_info_1) const = 0;
+        virtual void plot(const PointCloud& pc_0, const PointCloud& pc_1, const PointCloud& pc_2) const = 0;
+        virtual void plot(const PointCloud& pc_0, const struct IPlotter::plot_info& pc_info_0,
+                          const PointCloud& pc_1, const struct IPlotter::plot_info& pc_info_1) const = 0;
+        virtual void plot(const PointCloud& pc_0, const struct IPlotter::plot_info& pc_info_0,
+                          const PointCloud& pc_1, const struct IPlotter::plot_info& pc_info_1,
+                          const PointCloud& pc_2, const struct IPlotter::plot_info& pc_info_2) const = 0;
         virtual void plot(const PointCloud& pc_0, const PointCloud& pc_1, const std::vector<uint32_t>& associate_list) const = 0;
         virtual void plot(const PointCloud& pc_0, const struct IPlotter::plot_info& pc_info_0, const PointCloud& pc_1, const struct IPlotter::plot_info& pc_info_1, const std::vector<uint32_t>& associate_list) const = 0;
-        virtual void plot(const Pose2D& pose, const GridMap& grid_map) const = 0;
-        virtual void plot(const Pose2D& pose, const struct IPlotter::plot_info& pose_info, const GridMap& grid_map, const struct IPlotter::plot_info& map_info) const = 0;
+        virtual void plot(const Pose2D& pose, const PointCloud& pc, const GridMap& grid_map) const = 0;
+        virtual void plot(const Pose2D& pose, const struct IPlotter::plot_info& pose_info,
+                          const PointCloud& pc, const struct IPlotter::plot_info& pc_info,
+                          const GridMap& grid_map, const struct IPlotter::plot_info& map_info) const = 0;
 };
 

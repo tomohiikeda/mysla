@@ -43,19 +43,20 @@ void GnuplotPlotter::plot(const Pose2D& pose, const PointCloud& pc) const
 {
     IPlotter::plot_info pose_info = {
         .label = "pose",
-        .color = default_color,
+        .color = default_color_0,
         .line_width = default_line_width,
     };
     IPlotter::plot_info pc_info = {
         .label = "data",
-        .color = default_color,
+        .color = default_color_1,
         .pt_size = default_pt_size,
         .pt_type = default_pt_type,
     };
     this->plot(pose, pose_info, pc, pc_info);
 }
 
-void GnuplotPlotter::plot(const Pose2D& pose, const struct IPlotter::plot_info& pose_info, const PointCloud& pc, const struct IPlotter::plot_info& pc_info) const
+void GnuplotPlotter::plot(const Pose2D& pose, const struct IPlotter::plot_info& pose_info,
+                          const PointCloud& pc, const struct IPlotter::plot_info& pc_info) const
 {
     if (fd == NULL)
         return;
@@ -64,13 +65,64 @@ void GnuplotPlotter::plot(const Pose2D& pose, const struct IPlotter::plot_info& 
     this->input_points(pc, pc_info.label.c_str());
     fprintf(fd, "plot \
                 \"$%s\" with lines linewidth %f linetype rgbcolor 0x%06x, \
-                \"$%s\" with points pointtype %d pointsize %f\n",
+                \"$%s\" with points pointtype %d pointsize %f linecolor rgbcolor 0x%06x\n",
                 pose_info.label.c_str(),
                 to_line_width(pose_info.line_width),
                 to_color(pose_info.color),
                 pc_info.label.c_str(),
                 to_point_type(pc_info.pt_type),
-                to_point_size(pc_info.pt_size));
+                to_point_size(pc_info.pt_size),
+                to_color(pc_info.color));
+    fflush(fd);
+}
+
+void GnuplotPlotter::plot(const Pose2D& pose, const PointCloud& pc_0, const PointCloud& pc_1) const
+{
+    IPlotter::plot_info pose_info = {
+        .label = "pose",
+        .color = default_color_0,
+        .line_width = default_line_width,
+    };
+    IPlotter::plot_info pc_info_0 = {
+        .label = "data_0",
+        .color = default_color_1,
+        .pt_size = default_pt_size,
+        .pt_type = default_pt_type,
+    };
+    IPlotter::plot_info pc_info_1 = {
+        .label = "data_1",
+        .color = default_color_2,
+        .pt_size = default_pt_size,
+        .pt_type = default_pt_type,
+    };
+    this->plot(pose, pose_info, pc_0, pc_info_0, pc_1, pc_info_1);
+}
+
+void GnuplotPlotter::plot(const Pose2D& pose, const struct IPlotter::plot_info& pose_info,
+                          const PointCloud& pc_0, const struct IPlotter::plot_info& pc_info_0,
+                          const PointCloud& pc_1, const struct IPlotter::plot_info& pc_info_1) const
+{
+    if (fd == NULL)
+        return;
+
+    this->input_pose(pose, pose_info.label.c_str());
+    this->input_points(pc_0, pc_info_0.label.c_str());
+    this->input_points(pc_1, pc_info_1.label.c_str());
+    fprintf(fd, "plot \
+                \"$%s\" with lines linewidth %f linetype rgbcolor 0x%06x, \
+                \"$%s\" with points pointtype %d pointsize %f linecolor rgbcolor 0x%06x, \
+                \"$%s\" with points pointtype %d pointsize %f linecolor rgbcolor 0x%06x\n",
+                pose_info.label.c_str(),
+                to_line_width(pose_info.line_width),
+                to_color(pose_info.color),
+                pc_info_0.label.c_str(),
+                to_point_type(pc_info_0.pt_type),
+                to_point_size(pc_info_0.pt_size),
+                to_color(pc_info_0.color),
+                pc_info_1.label.c_str(),
+                to_point_type(pc_info_1.pt_type),
+                to_point_size(pc_info_1.pt_size),
+                to_color(pc_info_1.color));
     fflush(fd);
 }
 
@@ -78,7 +130,7 @@ void GnuplotPlotter::plot(const PointCloud& pc) const
 {
     IPlotter::plot_info pc_info = {
         .label = "data",
-        .color = default_color,
+        .color = default_color_0,
         .pt_size = default_pt_size,
         .pt_type = default_pt_type,
     };
@@ -91,10 +143,11 @@ void GnuplotPlotter::plot(const PointCloud& pc, const struct IPlotter::plot_info
         return;
 
     this->input_points(pc, pc_info.label.c_str());
-    fprintf(fd, "plot \"$%s\" with points pointtype %d pointsize %f\n",
+    fprintf(fd, "plot \"$%s\" with points pointtype %d pointsize %f linecolor rgbcolor 0x%06x\n",
                 pc_info.label.c_str(),
                 to_point_type(pc_info.pt_type),
-                to_point_size(pc_info.pt_size));
+                to_point_size(pc_info.pt_size),
+                to_color(pc_info.color));
     fflush(fd);
 }
 
@@ -102,20 +155,44 @@ void GnuplotPlotter::plot(const PointCloud& pc_0, const PointCloud& pc_1) const
 {
     IPlotter::plot_info pc_info_0 = {
         .label = "data_0",
-        .color = default_color,
+        .color = default_color_0,
         .pt_size = default_pt_size,
         .pt_type = default_pt_type,
     };
     IPlotter::plot_info pc_info_1 = {
         .label = "data_1",
-        .color = default_color_2,
+        .color = default_color_1,
         .pt_size = default_pt_size,
         .pt_type = default_pt_type,
     };
     this->plot(pc_0, pc_info_0, pc_1, pc_info_1);
 }
 
-void GnuplotPlotter::plot(const PointCloud& pc_0, const struct IPlotter::plot_info& pc_info_0, const PointCloud& pc_1, const struct IPlotter::plot_info& pc_info_1) const
+void GnuplotPlotter::plot(const PointCloud& pc_0, const PointCloud& pc_1, const PointCloud& pc_2) const
+{
+    IPlotter::plot_info pc_info_0 = {
+        .label = "data_0",
+        .color = default_color_0,
+        .pt_size = default_pt_size,
+        .pt_type = default_pt_type,
+    };
+    IPlotter::plot_info pc_info_1 = {
+        .label = "data_1",
+        .color = default_color_1,
+        .pt_size = default_pt_size,
+        .pt_type = default_pt_type,
+    };
+    IPlotter::plot_info pc_info_2 = {
+        .label = "data_2",
+        .color = default_color_2,
+        .pt_size = default_pt_size,
+        .pt_type = default_pt_type,
+    };
+    this->plot(pc_0, pc_info_0, pc_1, pc_info_1, pc_2, pc_info_2);
+}
+
+void GnuplotPlotter::plot(const PointCloud& pc_0, const struct IPlotter::plot_info& pc_info_0,
+                          const PointCloud& pc_1, const struct IPlotter::plot_info& pc_info_1) const
 {
     if (fd == NULL)
         return;
@@ -123,15 +200,45 @@ void GnuplotPlotter::plot(const PointCloud& pc_0, const struct IPlotter::plot_in
     this->input_points(pc_0, pc_info_0.label.c_str());
     this->input_points(pc_1, pc_info_1.label.c_str());
     fprintf(fd, "plot \
-                \"$%s\" with points pointtype %d pointsize %f, \
-                \"$%s\" with points pointtype %d pointsize %f, \
-                \n",
+                \"$%s\" with points pointtype %d pointsize %f linecolor rgbcolor 0x%06x, \
+                \"$%s\" with points pointtype %d pointsize %f linecolor rgbcolor 0x%06x\n",
                 pc_info_0.label.c_str(),
                 to_point_type(pc_info_0.pt_type),
                 to_point_size(pc_info_0.pt_size),
+                to_color(pc_info_0.color),
                 pc_info_1.label.c_str(),
                 to_point_type(pc_info_1.pt_type),
-                to_point_size(pc_info_1.pt_size));
+                to_point_size(pc_info_1.pt_size),
+                to_color(pc_info_1.color));
+    fflush(fd);
+}
+
+void GnuplotPlotter::plot(const PointCloud& pc_0, const struct IPlotter::plot_info& pc_info_0,
+                          const PointCloud& pc_1, const struct IPlotter::plot_info& pc_info_1,
+                          const PointCloud& pc_2, const struct IPlotter::plot_info& pc_info_2) const
+{
+    if (fd == NULL)
+        return;
+
+    this->input_points(pc_0, pc_info_0.label.c_str());
+    this->input_points(pc_1, pc_info_1.label.c_str());
+    this->input_points(pc_2, pc_info_2.label.c_str());
+    fprintf(fd, "plot \
+                \"$%s\" with points pointtype %d pointsize %f linecolor rgbcolor 0x%06x, \
+                \"$%s\" with points pointtype %d pointsize %f linecolor rgbcolor 0x%06x, \
+                \"$%s\" with points pointtype %d pointsize %f linecolor rgbcolor 0x%06x\n",
+                pc_info_0.label.c_str(),
+                to_point_type(pc_info_0.pt_type),
+                to_point_size(pc_info_0.pt_size),
+                to_color(pc_info_0.color),
+                pc_info_1.label.c_str(),
+                to_point_type(pc_info_1.pt_type),
+                to_point_size(pc_info_1.pt_size),
+                to_color(pc_info_1.color),
+                pc_info_2.label.c_str(),
+                to_point_type(pc_info_2.pt_type),
+                to_point_size(pc_info_2.pt_size),
+                to_color(pc_info_2.color));
     fflush(fd);
 }
 
@@ -139,13 +246,13 @@ void GnuplotPlotter::plot(const PointCloud& pc_0, const PointCloud& pc_1, const 
 {
     IPlotter::plot_info pc_info_0 = {
         .label = "data_0",
-        .color = default_color,
+        .color = default_color_0,
         .pt_size = default_pt_size,
         .pt_type = default_pt_type,
     };
     IPlotter::plot_info pc_info_1 = {
         .label = "data_1",
-        .color = default_color_2,
+        .color = default_color_1,
         .pt_size = default_pt_size,
         .pt_type = default_pt_type,
     };
@@ -161,43 +268,53 @@ void GnuplotPlotter::plot(const PointCloud& pc_0, const struct IPlotter::plot_in
     this->input_points(pc_1, pc_info_1.label.c_str());
     this->input_associates(pc_0, pc_1, associate_list, "associate");
     fprintf(fd, "plot \
-                \"$%s\" with points pointtype %d pointsize %f, \
-                \"$%s\" with points pointtype %d pointsize %f, \
+                \"$%s\" with points pointtype %d pointsize %f linecolor rgbcolor 0x%06x, \
+                \"$%s\" with points pointtype %d pointsize %f linecolor rgbcolor 0x%06x, \
                 \"$%s\" with linespoints pointtype 0\n",
                 pc_info_0.label.c_str(),
                 to_point_type(pc_info_0.pt_type),
                 to_point_size(pc_info_0.pt_size),
+                to_color(pc_info_0.color),
                 pc_info_1.label.c_str(),
                 to_point_type(pc_info_1.pt_type),
                 to_point_size(pc_info_1.pt_size),
+                to_color(pc_info_1.color),
                 "associate");
     fflush(fd);
 }
 
-void GnuplotPlotter::plot(const Pose2D& pose, const GridMap& grid_map) const
+void GnuplotPlotter::plot(const Pose2D& pose, const PointCloud& pc, const GridMap& grid_map) const
 {
     IPlotter::plot_info pose_info = {
         .label = "pose",
         .color = IPlotter::red,
         .line_width = default_line_width,
     };
-    IPlotter::plot_info map_info = {
-        .label = "map",
-        .color = default_color,
+    IPlotter::plot_info pc_info = {
+        .label = "pc",
+        .color = IPlotter::red,
         .pt_size = to_point_size(1.0f),
         .pt_type = IPlotter::round_fill,
     };
-    this->plot(pose, pose_info, grid_map, map_info);
+    IPlotter::plot_info map_info = {
+        .label = "map",
+        .color = default_color_0,
+        .pt_size = to_point_size(1.2f),
+        .pt_type = IPlotter::round_fill,
+    };
+    this->plot(pose, pose_info, pc, pc_info, grid_map, map_info);
 }
 
-void GnuplotPlotter::plot(const Pose2D& pose, const struct IPlotter::plot_info& pose_info, const GridMap& grid_map, const struct IPlotter::plot_info& map_info) const
+void GnuplotPlotter::plot(const Pose2D& pose, const struct IPlotter::plot_info& pose_info,
+                          const PointCloud& pc, const struct IPlotter::plot_info& pc_info,
+                          const GridMap& grid_map, const struct IPlotter::plot_info& map_info) const
 {
     if (fd == NULL)
         return;
 
-    PointCloud pc;
-    grid_map.to_point_cloud(&pc);
-    this->plot(pose, pose_info, pc, map_info);
+    PointCloud map_pc;
+    grid_map.to_point_cloud(&map_pc);
+    this->plot(pose, pose_info, pc, pc_info, map_pc, map_info);
 }
 
 void GnuplotPlotter::input_pose(const Pose2D& pose, const char *data_var) const
@@ -279,7 +396,7 @@ uint32_t GnuplotPlotter::to_color(color color) const
 {
     switch(color){
     case red: return 0xff0000;
-    case green: return 0x00ff00;
+    case green: return 0x2e8b57;
     case blue: return 0x0000ff;
     case cyan: return 0x00ffff;
     case magenta: return 0xff00ff;
