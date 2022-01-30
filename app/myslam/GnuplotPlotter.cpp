@@ -3,6 +3,12 @@
 #include <fstream>
 #include "GnuplotPlotter.hpp"
 
+/**
+ * @brief open gnuplot
+ *
+ * @return true succeeded
+ * @return false failed
+ */
 bool GnuplotPlotter::open(void)
 {
     fd = popen("gnuplot", "w");
@@ -18,6 +24,10 @@ bool GnuplotPlotter::open(void)
     return true;
 }
 
+/**
+ * @brief close gnuplot
+ *
+ */
 void GnuplotPlotter::close(void)
 {
     if (fd == NULL)
@@ -28,126 +38,169 @@ void GnuplotPlotter::close(void)
     return;
 }
 
-/**
- * @brief プロット関数。自機をプロットする。
- * @param pose 自機の現在Pose
- */
-void GnuplotPlotter::plot(const Pose2D pose) const
-{
-    if (fd == NULL)
-        return;
 
-    fprintf(fd, "$pose << EOD\n");
-    fprintf(fd, "%f %f\n", pose.x, pose.y);
-    fprintf(fd, "EOD\n");
-    fprintf(fd, "plot \"$pose\" with points pointtype 1 pointsize %f\n", this->POINT_SIZE);
-    fflush(fd);
+void GnuplotPlotter::plot(const Pose2D& pose, const PointCloud& pc) const
+{
+    IPlotter::plot_info pose_info = {
+        .label = "pose",
+        .color = default_color,
+        .line_width = default_line_width,
+    };
+    IPlotter::plot_info pc_info = {
+        .label = "data",
+        .color = default_color,
+        .pt_size = default_pt_size,
+        .pt_type = default_pt_type,
+    };
+    this->plot(pose, pose_info, pc, pc_info);
 }
 
-void GnuplotPlotter::plot(const Pose2D pose, const PointCloud *pc, const double pt_size) const
+void GnuplotPlotter::plot(const Pose2D& pose, const struct IPlotter::plot_info& pose_info, const PointCloud& pc, const struct IPlotter::plot_info& pc_info) const
 {
     if (fd == NULL)
         return;
 
-    const char *pose_var = "pose";
-    const char *data_var = "data";
-    this->input_pose(pose, pose_var);
-    this->input_points(pc, data_var);
+    this->input_pose(pose, pose_info.label.c_str());
+    this->input_points(pc, pc_info.label.c_str());
     fprintf(fd, "plot \
-                \"$%s\" with lines linewidth 5 linetype rgbcolor \'red\', \
-                \"$%s\" with points pointtype 7 pointsize %f\n", pose_var, data_var, pt_size);
+                \"$%s\" with lines linewidth %f linetype rgbcolor 0x%06x, \
+                \"$%s\" with points pointtype %d pointsize %f\n",
+                pose_info.label.c_str(),
+                to_line_width(pose_info.line_width),
+                to_color(pose_info.color),
+                pc_info.label.c_str(),
+                to_point_type(pc_info.pt_type),
+                to_point_size(pc_info.pt_size));
     fflush(fd);
 }
 
-void GnuplotPlotter::plot(const PointCloud *pc) const
+void GnuplotPlotter::plot(const PointCloud& pc) const
+{
+    IPlotter::plot_info pc_info = {
+        .label = "data",
+        .color = default_color,
+        .pt_size = default_pt_size,
+        .pt_type = default_pt_type,
+    };
+    this->plot(pc, pc_info);
+}
+
+void GnuplotPlotter::plot(const PointCloud& pc, const struct IPlotter::plot_info& pc_info) const
 {
     if (fd == NULL)
         return;
 
-    const char *data_var = "data";
-    this->input_points(pc, data_var);
-
-    fprintf(fd, "plot \"$%s\" with points pointtype 7 pointsize %f\n", data_var, this->POINT_SIZE);
+    this->input_points(pc, pc_info.label.c_str());
+    fprintf(fd, "plot \"$%s\" with points pointtype %d pointsize %f\n",
+                pc_info.label.c_str(),
+                to_point_type(pc_info.pt_type),
+                to_point_size(pc_info.pt_size));
     fflush(fd);
-    return;
 }
 
-void GnuplotPlotter::plot(const PointCloud *pc_0, const double pt_size_0, const PointCloud *pc_1, const double pt_size_1) const
+void GnuplotPlotter::plot(const PointCloud& pc_0, const PointCloud& pc_1) const
+{
+    IPlotter::plot_info pc_info_0 = {
+        .label = "data_0",
+        .color = default_color,
+        .pt_size = default_pt_size,
+        .pt_type = default_pt_type,
+    };
+    IPlotter::plot_info pc_info_1 = {
+        .label = "data_1",
+        .color = default_color_2,
+        .pt_size = default_pt_size,
+        .pt_type = default_pt_type,
+    };
+    this->plot(pc_0, pc_info_0, pc_1, pc_info_1);
+}
+
+void GnuplotPlotter::plot(const PointCloud& pc_0, const struct IPlotter::plot_info& pc_info_0, const PointCloud& pc_1, const struct IPlotter::plot_info& pc_info_1) const
 {
     if (fd == NULL)
         return;
 
-    const char *plotfile_0 = "data_0";
-    const char *plotfile_1 = "data_1";
-    const char *normalfile_0 = "normal";
-    this->input_points(pc_0, plotfile_0);
-    this->input_points(pc_1, plotfile_1);
-    this->input_normal(pc_1, normalfile_0);
-
+    this->input_points(pc_0, pc_info_0.label.c_str());
+    this->input_points(pc_1, pc_info_1.label.c_str());
     fprintf(fd, "plot \
-                \"$%s\" with points pointtype 7 pointsize %f, \
-                \"$%s\" with points pointtype 7 pointsize %f, \
+                \"$%s\" with points pointtype %d pointsize %f, \
+                \"$%s\" with points pointtype %d pointsize %f, \
                 \n",
-            plotfile_0, pt_size_0, plotfile_1, pt_size_1);
+                pc_info_0.label.c_str(),
+                to_point_type(pc_info_0.pt_type),
+                to_point_size(pc_info_0.pt_size),
+                pc_info_1.label.c_str(),
+                to_point_type(pc_info_1.pt_type),
+                to_point_size(pc_info_1.pt_size));
     fflush(fd);
-
-    return;
 }
 
-void GnuplotPlotter::plot(const PointCloud *pc_0, const PointCloud *pc_1) const
+void GnuplotPlotter::plot(const PointCloud& pc_0, const PointCloud& pc_1, const std::vector<uint32_t>& associate_list) const
 {
-    this->plot(pc_0, this->POINT_SIZE, pc_1, this->POINT_SIZE);
+    IPlotter::plot_info pc_info_0 = {
+        .label = "data_0",
+        .color = default_color,
+        .pt_size = default_pt_size,
+        .pt_type = default_pt_type,
+    };
+    IPlotter::plot_info pc_info_1 = {
+        .label = "data_1",
+        .color = default_color_2,
+        .pt_size = default_pt_size,
+        .pt_type = default_pt_type,
+    };
+    this->plot(pc_0, pc_info_0, pc_1, pc_info_1, associate_list);
 }
 
-void GnuplotPlotter::plot(const PointCloud *pc_0,
-                          const PointCloud *pc_1,
-                          const std::vector<uint32_t>& associate_list) const
+void GnuplotPlotter::plot(const PointCloud& pc_0, const struct IPlotter::plot_info& pc_info_0, const PointCloud& pc_1, const struct IPlotter::plot_info& pc_info_1, const std::vector<uint32_t>& associate_list) const
 {
     if (fd == NULL)
         return;
 
-    const char *plotfile_0 = "data_0";
-    const char *plotfile_1 = "data_1";
-    const char *plotfile_2 = "associates";
-    this->input_points(pc_0, plotfile_0);
-    this->input_points(pc_1, plotfile_1);
-    this->input_associates(pc_0, pc_1, associate_list, plotfile_2);
-
+    this->input_points(pc_0, pc_info_0.label.c_str());
+    this->input_points(pc_1, pc_info_1.label.c_str());
+    this->input_associates(pc_0, pc_1, associate_list, "associate");
     fprintf(fd, "plot \
-                \"$%s\" with points pointtype 7 pointsize %f, \
-                \"$%s\" with points pointtype 7 pointsize %f, \
+                \"$%s\" with points pointtype %d pointsize %f, \
+                \"$%s\" with points pointtype %d pointsize %f, \
                 \"$%s\" with linespoints pointtype 0\n",
-            plotfile_0, this->POINT_SIZE, plotfile_1, this->POINT_SIZE, plotfile_2);
-
+                pc_info_0.label.c_str(),
+                to_point_type(pc_info_0.pt_type),
+                to_point_size(pc_info_0.pt_size),
+                pc_info_1.label.c_str(),
+                to_point_type(pc_info_1.pt_type),
+                to_point_size(pc_info_1.pt_size),
+                "associate");
     fflush(fd);
-    return;
 }
 
-void GnuplotPlotter::plot(const GridMap& grid_map) const
+void GnuplotPlotter::plot(const Pose2D& pose, const GridMap& grid_map) const
+{
+    IPlotter::plot_info pose_info = {
+        .label = "pose",
+        .color = IPlotter::red,
+        .line_width = default_line_width,
+    };
+    IPlotter::plot_info map_info = {
+        .label = "map",
+        .color = default_color,
+        .pt_size = to_point_size(1.0f),
+        .pt_type = IPlotter::round_fill,
+    };
+    this->plot(pose, pose_info, grid_map, map_info);
+}
+
+void GnuplotPlotter::plot(const Pose2D& pose, const struct IPlotter::plot_info& pose_info, const GridMap& grid_map, const struct IPlotter::plot_info& map_info) const
 {
     if (fd == NULL)
         return;
 
     PointCloud pc;
     grid_map.to_point_cloud(&pc);
-    this->plot(&pc);
-
-    return;
+    this->plot(pose, pose_info, pc, map_info);
 }
 
-void GnuplotPlotter::plot(const Pose2D pose, const GridMap& grid_map) const
-{
-    if (fd == NULL)
-        return;
-
-    PointCloud pc;
-    grid_map.to_point_cloud(&pc);
-    this->plot(pose, &pc, 1.0f);
-
-    return;
-}
-
-void GnuplotPlotter::input_pose(const Pose2D pose, const char *data_var) const
+void GnuplotPlotter::input_pose(const Pose2D& pose, const char *data_var) const
 {
     const double L = 100.0f;
     fprintf(fd, "$%s << EOD\n", data_var);
@@ -162,33 +215,30 @@ void GnuplotPlotter::input_pose(const Pose2D pose, const char *data_var) const
     fprintf(fd, "EOD\n");
 }
 
-void GnuplotPlotter::input_points(const PointCloud *pc, const char *data_var) const
+void GnuplotPlotter::input_points(const PointCloud& pc, const char *data_var) const
 {
     fprintf(fd, "$%s << EOD\n", data_var);
-    for (size_t i = 0; i< pc->size(); i++) {
-        fprintf(fd, "%f %f\n", pc->at(i).x, pc->at(i).y);
+    for (size_t i = 0; i< pc.size(); i++) {
+        fprintf(fd, "%f %f\n", pc.at(i).x, pc.at(i).y);
     }
     fprintf(fd, "EOD\n");
 }
 
-void GnuplotPlotter::input_associates(const PointCloud *cur_pc, const PointCloud *ref_pc,
+void GnuplotPlotter::input_associates(const PointCloud& cur_pc, const PointCloud& ref_pc,
             const std::vector<uint32_t>& associate_list, const char *data_var) const
 {
     fprintf(fd, "$%s << EOD\n", data_var);
 
     for (size_t i = 0; i < associate_list.size(); i++) {
 
-        Point cur_point = cur_pc->at(i);
+        Point cur_point = cur_pc.at(i);
         fprintf(fd, "%f %f\n", cur_point.x, cur_point.y);
 
         Point ref_point;
-        if (ref_pc->size() > associate_list.at(i)) {
-            ref_point = ref_pc->at(associate_list.at(i));
+        if (ref_pc.size() > associate_list.at(i)) {
+            ref_point = ref_pc.at(associate_list.at(i));
             fprintf(fd, "%f %f\n", ref_point.x, ref_point.y);
         }
-
-        //if (cur_point.type == PT_ISOLATE || ref_point.type == PT_ISOLATE)
-        //   continue;
 
         fprintf(fd, "\n");
     }
@@ -196,11 +246,11 @@ void GnuplotPlotter::input_associates(const PointCloud *cur_pc, const PointCloud
     fprintf(fd, "EOD\n");
 }
 
-void GnuplotPlotter::input_normal(const PointCloud *pc, const char *data_var) const
+void GnuplotPlotter::input_normal(const PointCloud& pc, const char *data_var) const
 {
     fprintf(fd, "$%s << EOD\n", data_var);
-    for (size_t i = 0; i < pc->size(); i++) {
-        Point pt = pc->at(i);
+    for (size_t i = 0; i < pc.size(); i++) {
+        Point pt = pc.at(i);
         if (pt.normal.x || pt.normal.y) {
             fprintf(fd, "%f %f\n", pt.x, pt.y);
             fprintf(fd, "%f %f\n", pt.x + pt.normal.x * 100, pt.y + pt.normal.y * 100);
@@ -210,3 +260,32 @@ void GnuplotPlotter::input_normal(const PointCloud *pc, const char *data_var) co
     fprintf(fd, "EOD\n");
 }
 
+double GnuplotPlotter::to_point_size(double pt_size) const
+{
+    return pt_size;
+}
+
+double GnuplotPlotter::to_line_width(double line_width) const
+{
+    return line_width;
+}
+
+uint32_t GnuplotPlotter::to_point_type(point_type pt_type) const
+{
+    return (uint32_t)pt_type;
+}
+
+uint32_t GnuplotPlotter::to_color(color color) const
+{
+    switch(color){
+    case red: return 0xff0000;
+    case green: return 0x00ff00;
+    case blue: return 0x0000ff;
+    case cyan: return 0x00ffff;
+    case magenta: return 0xff00ff;
+    case yellow: return 0xffff00;
+    case black: return 0xffffff;
+    case purple: return 0xa020f0;
+    default: return 0xffffff;
+    }
+}

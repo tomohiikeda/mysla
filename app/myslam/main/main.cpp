@@ -71,7 +71,6 @@ static int slam_main(int argc, const char *argv[])
                             DataRetriever::online_mode : DataRetriever::offline_mode;
 
     DataRetriever retriever(mode, lidar, pulse_sensor, dirname, start_index, end_index);
-
     GnuplotPlotter plotter;
     Slam *slam = new Slam(plotter, retriever);
 
@@ -240,7 +239,7 @@ static int scan_plot_main(int argc, const char *argv[])
     while (ctrl_c_pressed == false) {
         PointCloud pc;
         lidar.get_point_cloud(&pc);
-        plotter.plot(&pc);
+        plotter.plot(pc);
     }
 
     lidar.stop();

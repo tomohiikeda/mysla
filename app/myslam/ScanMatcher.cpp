@@ -78,7 +78,7 @@ Movement2D ScanMatcher::do_scan_matching(double speed) const
     Movement2D total_movement;
 
     if (this->is_debug_mode()) {
-        this->debug_plotter.plot(this->cur_scan, this->ref_scan);
+        this->debug_plotter.plot(*this->cur_scan, *this->ref_scan);
         sleep(speed);
     }
 
@@ -303,6 +303,6 @@ void ScanMatcher::plot_for_debug(const PointCloud *cur_scan,
                                  const std::vector<uint32_t>& associate_list) const
 {
     if (this->is_debug_mode())
-        this->debug_plotter.plot(cur_scan, ref_scan, associate_list);
+        this->debug_plotter.plot(*cur_scan, *ref_scan, associate_list);
 }
 
