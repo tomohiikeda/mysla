@@ -115,14 +115,14 @@ void GnuplotPlotter::plot(const Pose2D& pose, const struct IPlotter::plot_info& 
                 pose_info.label.c_str(),
                 to_line_width(pose_info.line_width),
                 to_color(pose_info.color),
-                pc_info_0.label.c_str(),
-                to_point_type(pc_info_0.pt_type),
-                to_point_size(pc_info_0.pt_size),
-                to_color(pc_info_0.color),
                 pc_info_1.label.c_str(),
                 to_point_type(pc_info_1.pt_type),
                 to_point_size(pc_info_1.pt_size),
-                to_color(pc_info_1.color));
+                to_color(pc_info_1.color),
+                pc_info_0.label.c_str(),
+                to_point_type(pc_info_0.pt_type),
+                to_point_size(pc_info_0.pt_size),
+                to_color(pc_info_0.color));
     fflush(fd);
 }
 
@@ -293,7 +293,7 @@ void GnuplotPlotter::plot(const Pose2D& pose, const PointCloud& pc, const GridMa
     IPlotter::plot_info pc_info = {
         .label = "pc",
         .color = IPlotter::red,
-        .pt_size = to_point_size(1.0f),
+        .pt_size = to_point_size(0.8f),
         .pt_type = IPlotter::round_fill,
     };
     IPlotter::plot_info map_info = {
