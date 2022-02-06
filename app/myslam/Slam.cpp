@@ -26,8 +26,8 @@ bool Slam::init(void)
  */
 bool Slam::start(void)
 {
-    if(retriever.start() == false)
-        return false;
+   // if(retriever.start() == false)
+   //     return false;
 
     int err = pthread_create(&slam_thread, NULL, Slam::thread_entry, this);
     if(err){
@@ -64,7 +64,7 @@ void Slam::process_loop(void)
 
     this->running = true;
 
-    //this->load_from_file("mov4_374", cur_pose, *world_grid_map);
+    this->load_from_file("slam", cur_pose, *world_grid_map);
 
     // ずっとループ
     while (this->running == true) {
@@ -97,7 +97,7 @@ void Slam::process_loop(void)
         loop_num++;
     }
 
-    //this->save_to_file("mov4_374", cur_pose, *world_grid_map);
+    //this->save_to_file("slam", cur_pose, *world_grid_map);
     printf("//---------------------------------------------------\n");
     printf("// [%04d] (%04.5fmm, %04.5fmm, %03.5fdeg) total_elapsed=%lfsec\n", loop_num, cur_pose.x, cur_pose.y, to_degree(cur_pose.direction), total_elapsed);
     printf("// total=%lf\n", total_elapsed);

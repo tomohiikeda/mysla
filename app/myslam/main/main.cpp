@@ -11,12 +11,14 @@
 #include "Motor.hpp"
 #include "PoseEstimator.hpp"
 #include "GridMap.hpp"
+#include "PathDetector.hpp"
 
 static int slam_main(int argc, const char *argv[]);
 static int save_main(int argc, const char *argv[]);
 static int scan_matching_main(int argc, const char *argv[]);
 static int scan_plot_main(int argc, const char *argv[]);
 static int remocon_main(int argc, const char *argv[]);
+static int search_path_main(int argc, const char *argv[]);
 static int debug_main(int argc, const char *argv[]);
 static int usage_main(int argc, const char *argv[]);
 
@@ -34,6 +36,7 @@ static const struct argstr_func main_func_table[] = {
     { "scan_plot",      1,  scan_plot_main,     "scan" },
     { "remocon",        1,  remocon_main,       "remocon" },
     { "matching",       4,  scan_matching_main, "scan matching" },
+    { "searchpath",     1,  search_path_main,   "usage" },
     { "debug",          1,  debug_main,         "debug" },
     { "usage",          1,  usage_main,         "usage" },
 };
@@ -88,11 +91,11 @@ static int slam_main(int argc, const char *argv[])
     if (slam->start() == false)
         return EXIT_FAILURE;
 
-    if (motor.init() == false)
-        return EXIT_FAILURE;
+    //if (motor.init() == false)
+    //    return EXIT_FAILURE;
 
-    if (remocon.init() == false)
-        return EXIT_FAILURE;
+    //if (remocon.init() == false)
+    //    return EXIT_FAILURE;
 
     while (ctrl_c_pressed == false)
         sleep(1);
@@ -278,7 +281,40 @@ static int remocon_main(int argc, const char *argv[])
 }
 
 /**
- * @brief スキャンマッチングだけを行うモード
+ * @brief 
+ * 
+ * @param argc 
+ * @param argv 
+ * @return int 
+ */
+static int search_path_main(int argc, const char *argv[])
+{
+    Trajectory path;
+    GnuplotPlotter plotter;
+    PathDetector detector(plotter, true);
+    Pose2D pose(0, 0, 0);
+    PointCloud pc;
+    GridMap map;
+    Point start(0, 0);
+    Point goal(0, 100);
+
+    plotter.open();
+    map.load_from_file("slam_gridmap.dat");
+
+    detector.search_path(path, map, start, goal);
+
+    plotter.plot(pose, pc, map);
+
+    while (true) {
+        sleep(1);
+    }
+
+    plotter.close();
+    return EXIT_SUCCESS;
+}
+
+/**
+ * @brief デバッグ用
  *
  * @param argc
  * @param argv
