@@ -91,10 +91,10 @@ void Slam::process_loop(void)
         double elapsed = elapsedtime(starttime);
         total_elapsed += elapsed;
 
-        loop_num++;
-
         printf("// [%04d] (%04.5fmm, %04.5fmm, %03.5fdeg) elapsed=%lfsec\n", loop_num, cur_pose.x, cur_pose.y, to_degree(cur_pose.direction), elapsed);
         printf("// ave=%lf\n", total_elapsed / loop_num);
+
+        loop_num++;
     }
 
     //this->save_to_file("mov4_374", cur_pose, *world_grid_map);

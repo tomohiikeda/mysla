@@ -1,5 +1,6 @@
 #pragma once
 
+#include <mutex>
 #include "Common.hpp"
 #include "ISensor.hpp"
 #include "IOdometer.hpp"
@@ -47,6 +48,7 @@ class DataRetriever {
         bool retrieve_online(SlamData& slam_data);
         bool retrieve_offline(SlamData& slam_data);
         std::vector<SlamData> data_fifo;
+        std::mutex mtx_;
 
         bool running;
         pthread_t thread;

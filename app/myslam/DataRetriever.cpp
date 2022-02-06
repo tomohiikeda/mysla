@@ -47,23 +47,12 @@ bool DataRetriever::retrieve(SlamData& slam_data)
         return retrieve_online(slam_data);
 }
 
-bool DataRetriever::retrieve_online(SlamData& slam_data)
-{
-    if (this->data_fifo.size() == 0)
-        return false;
-
-    slam_data = this->data_fifo[0];
-    this->data_fifo.erase(this->data_fifo.begin());
-
-    return true;
-}
-
 bool DataRetriever::retrieve_offline(SlamData& slam_data)
 {
     if (this->file_index > this->end_index)
         return false;
 
-    char filename[50];
+    char filename[100];
     sprintf(filename, "%s/pt_%04d.txt", this->dir_name.c_str(), this->file_index);
 
     if (slam_data.load_from_file(filename) == false)
@@ -71,6 +60,19 @@ bool DataRetriever::retrieve_offline(SlamData& slam_data)
 
     slam_data.pc()->analyse_points();
     this->file_index++;
+    return true;
+}
+
+bool DataRetriever::retrieve_online(SlamData& slam_data)
+{
+    if (this->data_fifo.size() == 0)
+        return false;
+
+    this->mtx_.lock();
+    this->data_fifo.at(0).copy_to(slam_data);
+    this->data_fifo.erase(this->data_fifo.begin());
+    this->mtx_.unlock();
+
     return true;
 }
 
@@ -84,7 +86,7 @@ void DataRetriever::process_loop(void)
     while (this->running == true) {
 
         SlamData slam_data;
-        slam_data.timestamp = get_currenttime();
+        *slam_data.timestamp() = get_currenttime();
 
         if (this->sensor.get_point_cloud(slam_data.pc()) == false)
             break;
@@ -92,9 +94,16 @@ void DataRetriever::process_loop(void)
         if (this->odometer.get_odometory(slam_data.odometory()) == false)
             break;
 
+        this->mtx_.lock();
         this->data_fifo.push_back(slam_data);
+        this->mtx_.unlock();
 
-        wait_for_time(slam_data.timestamp, 0.5f);
+        char filename[100];
+        sprintf(filename, "%s/pt_%04d.txt", this->dir_name.c_str(), this->file_index);
+        slam_data.save_to_file(filename);
+        this->file_index++;
+
+        wait_for_time(*slam_data.timestamp(), 0.5f);
     }
 }
 
