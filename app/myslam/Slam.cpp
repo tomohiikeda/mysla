@@ -26,8 +26,8 @@ bool Slam::init(void)
  */
 bool Slam::start(void)
 {
-   // if(retriever.start() == false)
-   //     return false;
+    if(retriever.start() == false)
+        return false;
 
     int err = pthread_create(&slam_thread, NULL, Slam::thread_entry, this);
     if(err){
@@ -64,7 +64,7 @@ void Slam::process_loop(void)
 
     this->running = true;
 
-    this->load_from_file("slam", cur_pose, *world_grid_map);
+    //this->load_from_file("slam", cur_pose, *world_grid_map);
 
     // ずっとループ
     while (this->running == true) {
